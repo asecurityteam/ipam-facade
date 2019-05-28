@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/serverfull"
 	"github.com/asecurityteam/settings"
@@ -11,9 +12,11 @@ import (
 
 func main() {
 	ctx := context.Background()
-	greetingHandler := &v1.GreetingHandler{}
+	fetchHandler := &v1.FetchByIPAddressHandler{
+		LogFn: domain.LoggerFromContext,
+	}
 	handlers := map[string]serverfull.Function{
-		"hello": serverfull.NewFunction(greetingHandler.Handle),
+		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
 	}
 
 	source, err := settings.NewEnvSource(os.Environ())

@@ -54,23 +54,31 @@ paths:
           description: "Success."
       x-transportd:
         backend: app
-  /{name}:
+  /v1/physical/ip/{ipAddress}:
     get:
-      description: An API Call.
+      summary: "Retrieve information about a non-cloud device by its current IP Address"
       parameters:
-        - name: "name"
+        - name: "ipAddress"
           in: "path"
-          description: "Name of person to greet."
+          description: "The IP address of the asset"
           required: true
           schema:
-            type: "string"
+            type: string
       responses:
-        "200":
-          description: "Success"
+        200:
+          description: "Customer, Subnet, and optionally Device information associated with the given IP address"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Greeting'
+                $ref: "#/components/schemas/PhysicalAsset"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: "No record of an asset with the given IP address was found."
       x-transportd:
         backend: app
         enabled:
@@ -80,16 +88,72 @@ paths:
           - "responsevalidation"
           - "lambda"
         lambda:
-          arn: "hello"
+          arn: "fetchbyip"
+          async: false
+          request: '{}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: '{"status": 500, "bodyPassthrough": true}'
+  /sync:
+    post:
+      description: "Sync the data from Device42 into the IPAM Facade database"
+      responses:
+        "204":
+          description: "Success."
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "sync"
           async: false
           request: '{}'
           success: '{"status": 200, "bodyPassthrough": true}'
           error: '{"status": 500, "bodyPassthrough": true}'
 components:
   schemas:
-    Greeting:
+    PhysicalAsset:
       type: object
       properties:
-        greeting:
+        ipAddress:
           type: string
-          description: The personal greeting.
+          description: IP Address of the asset.
+        resourceOwner:
+          type: string
+          description: Email address of the user most directly responsible for the asset.
+        businessUnit:
+          type: string
+          description: Team or department most directly responsible for the asset.
+          tags:
+            type: object
+            required:
+              - subnetID
+              - network
+            properties:
+              subnetID:
+                type: string
+                description: ID of the subnet containing the IP address within the backing CMDB.
+              network:
+                type: string
+                description: CIDR block with netmask for the subnet containing the IP address.
+              deviceID:
+                type: string
+                description: ID of the device associated with the IP address, if found, within the backing CMDB.
+              location:
+                type: string
+                description: Physical location of the asset. (Datacenter, office, etc.)
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: HTTP status message
+        code:
+          type: integer
+          description: HTTP status code
+        reason:
+          type: string
+          description: Detailed information about the error
