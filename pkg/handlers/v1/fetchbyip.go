@@ -1,6 +1,12 @@
 package v1
 
-import "context"
+import (
+	"context"
+	"net"
+
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
+	"github.com/asecurityteam/ipam-facade/pkg/logs"
+)
 
 // IPAddressQuery contains an IP address on which to search for physical assets.
 type IPAddressQuery struct {
@@ -35,32 +41,38 @@ type FetchByIPAddressHandler struct {
 func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQuery) (PhysicalAssetDetails, error) {
 	logger := h.LogFn(ctx)
 
-	asset, err := h.PhysicalAsetFetcher(ctx, query.IPAddress)
+	if ip := net.ParseIP(query.IPAddress); ip == nil {
+		err := domain.InvalidInput{IP: query.IPAddress}
+		logger.Error(logs.InvalidInput{Reason: err.Error()})
+		return PhysicalAssetDetails{}, err
+	}
+
+	asset, err := h.PhysicalAssetFetcher.FetchPhysicalAsset(ctx, query.IPAddress)
 	switch err.(type) {
 	case nil:
 		response := h.physicalAssetToResponse(asset)
 		return response, nil
 	case domain.AssetNotFound:
 		logger.Error(logs.AssetNotFound{Reason: err.Error()})
-		return PhysicalAsset{}, err
+		return PhysicalAssetDetails{}, err
 	default:
-		logger.Error(logs.AssetFetchError{Reason: err.Error()})
-		return PhysicalAsset{}, err
+		logger.Error(logs.AssetFetcherFailure{Reason: err.Error()})
+		return PhysicalAssetDetails{}, err
 	}
 }
 
 // physicalAssetToResponse converts a PhysicalAsset structure into a PhysicalAssetDetails structure for the
 // handler's HTTP response body.
-func (h *FetchByIpAddressHandler) physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
+func (h *FetchByIPAddressHandler) physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 	return PhysicalAssetDetails{
-		IP: asset.IP
-		ResourceOwner: asset.ResourceOwner
-		BusinessUnit: asset.BusinessUnit
+		IP:            asset.IP,
+		ResourceOwner: asset.ResourceOwner,
+		BusinessUnit:  asset.BusinessUnit,
 		Tags: tags{
-			SubnetID: asset.SubnetID
-			Network: asset.Network
-			DeviceID: asset.DeviceID
-			Location: asset.Location
-		}
+			SubnetID: asset.SubnetID,
+			Network:  asset.Network,
+			DeviceID: asset.DeviceID,
+			Location: asset.Location,
+		},
 	}
 }

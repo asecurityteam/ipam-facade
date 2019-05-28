@@ -21,6 +21,15 @@ type PhysicalAssetFetcher interface {
 	FetchPhysicalAsset(ctx context.Context, ipAddress string) (PhysicalAsset, error)
 }
 
+// InvalidInput occurs when a physical asset is requested by an invalid IP address.
+type InvalidInput struct {
+	IP string
+}
+
+func (e InvalidInput) Error() string {
+	return fmt.Sprintf("%v is not a valid IP address", e.IP)
+}
+
 // AssetNotFound is used to indicate that no physical asset with the given IP address exists in storage.
 type AssetNotFound struct {
 	Inner error
