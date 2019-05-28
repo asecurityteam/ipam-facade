@@ -15,8 +15,12 @@ func main() {
 	fetchHandler := &v1.FetchByIPAddressHandler{
 		LogFn: domain.LoggerFromContext,
 	}
+	syncHandler := &v1.SyncIPAMDataHandler{
+		LogFn: domain.LoggerFromContext,
+	}
 	handlers := map[string]serverfull.Function{
 		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
+		"sync":      serverfull.NewFunction(syncHandler.Handle),
 	}
 
 	source, err := settings.NewEnvSource(os.Environ())

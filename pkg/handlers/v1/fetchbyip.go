@@ -50,7 +50,7 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 	asset, err := h.PhysicalAssetFetcher.FetchPhysicalAsset(ctx, query.IPAddress)
 	switch err.(type) {
 	case nil:
-		response := h.physicalAssetToResponse(asset)
+		response := physicalAssetToResponse(asset)
 		return response, nil
 	case domain.AssetNotFound:
 		logger.Error(logs.AssetNotFound{Reason: err.Error()})
@@ -63,7 +63,7 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 
 // physicalAssetToResponse converts a PhysicalAsset structure into a PhysicalAssetDetails structure for the
 // handler's HTTP response body.
-func (h *FetchByIPAddressHandler) physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
+func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 	return PhysicalAssetDetails{
 		IP:            asset.IP,
 		ResourceOwner: asset.ResourceOwner,
