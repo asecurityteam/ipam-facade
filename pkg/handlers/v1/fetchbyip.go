@@ -43,7 +43,7 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 
 	if ip := net.ParseIP(query.IPAddress); ip == nil {
 		err := domain.InvalidInput{IP: query.IPAddress}
-		logger.Error(logs.InvalidInput{Reason: err.Error()})
+		logger.Info(logs.InvalidInput{Reason: err.Error()})
 		return PhysicalAssetDetails{}, err
 	}
 
@@ -53,7 +53,7 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 		response := physicalAssetToResponse(asset)
 		return response, nil
 	case domain.AssetNotFound:
-		logger.Error(logs.AssetNotFound{Reason: err.Error()})
+		logger.Info(logs.AssetNotFound{Reason: err.Error()})
 		return PhysicalAssetDetails{}, err
 	default:
 		logger.Error(logs.AssetFetcherFailure{Reason: err.Error()})
