@@ -18,18 +18,18 @@ func TestSyncHandlerSuccess(t *testing.T) {
 	ipamData := domain.IPAMData{
 		Devices: []domain.Device{
 			domain.Device{
-				ID:     "1",
-				IP:     "127.0.0.1",
-				Subnet: "1",
+				ID:       "1",
+				IP:       "127.0.0.1",
+				SubnetID: "1",
 			},
 		},
 		Subnets: []domain.Subnet{
 			domain.Subnet{
-				ID:       "1",
-				Network:  "127.0.0.0/31",
-				MaskBits: 1,
-				Location: "",
-				Customer: "1",
+				ID:         "1",
+				Network:    "127.0.0.0/31",
+				MaskBits:   1,
+				Location:   "",
+				CustomerID: "1",
 			},
 		},
 		Customers: []domain.Customer{
@@ -79,18 +79,18 @@ func TestSyncHandlerIPAMDataStorerFailure(t *testing.T) {
 	ipamData := domain.IPAMData{
 		Devices: []domain.Device{
 			domain.Device{
-				ID:     "1",
-				IP:     "127.0.0.1",
-				Subnet: "1",
+				ID:       "1",
+				IP:       "127.0.0.1",
+				SubnetID: "1",
 			},
 		},
 		Subnets: []domain.Subnet{
 			domain.Subnet{
-				ID:       "1",
-				Network:  "127.0.0.0/31",
-				MaskBits: 1,
-				Location: "",
-				Customer: "1",
+				ID:         "1",
+				Network:    "127.0.0.0/31",
+				MaskBits:   1,
+				Location:   "",
+				CustomerID: "1",
 			},
 		},
 		Customers: []domain.Customer{
