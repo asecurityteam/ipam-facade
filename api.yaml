@@ -54,23 +54,35 @@ paths:
           description: "Success."
       x-transportd:
         backend: app
-  /{name}:
+  /v1/physical/ip/{ipAddress}:
     get:
-      description: An API Call.
+      summary: "Retrieve information about a non-cloud device by its current IP Address"
       parameters:
-        - name: "name"
+        - name: "ipAddress"
           in: "path"
-          description: "Name of person to greet."
+          description: "The IP address of the asset"
           required: true
           schema:
-            type: "string"
+            type: string
       responses:
-        "200":
-          description: "Success"
+        200:
+          description: "Customer, Subnet, and optionally Device information associated with the given IP address"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Greeting'
+                $ref: "#/components/schemas/PhysicalAsset"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: "No record of an asset with the given IP address was found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       x-transportd:
         backend: app
         enabled:
@@ -80,16 +92,104 @@ paths:
           - "responsevalidation"
           - "lambda"
         lambda:
-          arn: "hello"
+          arn: "fetchbyip"
+          async: false
+          request: '{"ipAddress": "#!.Request.URL.ipAddress!#"}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "InvalidInput" !# 400,
+              #! else !#
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
+              #! else !# 500,
+              #! end !#
+              #! end !#
+              "bodyPassthrough": true
+            }
+  /sync:
+    post:
+      description: "Sync the data from Device42 into the IPAM Facade database"
+      responses:
+        204:
+          description: "Success."
+        500:
+          description: "IPAM data retrieved successfully, but storage of that data failed."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        503:
+          description: "Could not process request due to an IPAM dependency failure."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "sync"
           async: false
           request: '{}'
-          success: '{"status": 200, "bodyPassthrough": true}'
-          error: '{"status": 500, "bodyPassthrough": true}'
+          success: '{"status": 204, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "IPAMDataFetcherFailure" !# 503,
+              #! else !# 500,
+              #! end !#
+              "bodyPassthrough": true
+            }
 components:
   schemas:
-    Greeting:
+    PhysicalAsset:
       type: object
       properties:
-        greeting:
+        ipAddress:
           type: string
-          description: The personal greeting.
+          description: IP Address of the asset.
+        resourceOwner:
+          type: string
+          description: Email address of the user most directly responsible for the asset.
+        businessUnit:
+          type: string
+          description: Team or department most directly responsible for the asset.
+        tags:
+          type: object
+          required:
+            - subnetID
+            - network
+          properties:
+            network:
+              type: string
+              description: CIDR block with netmask for the subnet containing the IP address.
+            location:
+              type: string
+              description: Physical location of the asset. (Datacenter, office, etc.)
+            deviceID:
+              type: string
+              description: ID of the device associated with the IP address, if found, within the backing CMDB.
+            subnetID:
+              type: string
+              description: ID of the subnet containing the IP address within the backing CMDB.
+            customerID:
+              type: string
+              description: ID of the customer associated with the subnet containing the IP address.
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: HTTP status message
+        code:
+          type: integer
+          description: HTTP status code
+        reason:
+          type: string
+          description: Detailed information about the error
