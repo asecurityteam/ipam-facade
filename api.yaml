@@ -94,18 +94,18 @@ paths:
         lambda:
           arn: "fetchbyip"
           async: false
-          request: '{"ipAddress": "#!.Request.URL.ipAdress!#"}'
+          request: '{"ipAddress": "#!.Request.URL.ipAddress!#"}'
           success: '{"status": 200, "bodyPassthrough": true}'
           error: >
             {
               "status":
               #! if eq .Response.Body.errorType "InvalidInput" !# 400,
               #! else !#
-              #! if eq .Response.Body.errorType "NotFound" !$ 404,
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
               #! else !# 500,
               #! end !#
               #! end !#
-              "bodyPassthrough": true}
+              "bodyPassthrough": true
             }
   /sync:
     post:
@@ -144,7 +144,7 @@ paths:
               #! if eq .Response.Body.errorType "IPAMDataFetcherFailure" !# 503,
               #! else !# 500,
               #! end !#
-              "bodyPassthrough": true}
+              "bodyPassthrough": true
             }
 components:
   schemas:
@@ -160,24 +160,24 @@ components:
         businessUnit:
           type: string
           description: Team or department most directly responsible for the asset.
-          tags:
-            type: object
-            required:
-              - subnetID
-              - network
-            properties:
-              subnetID:
-                type: string
-                description: ID of the subnet containing the IP address within the backing CMDB.
-              network:
-                type: string
-                description: CIDR block with netmask for the subnet containing the IP address.
-              deviceID:
-                type: string
-                description: ID of the device associated with the IP address, if found, within the backing CMDB.
-              location:
-                type: string
-                description: Physical location of the asset. (Datacenter, office, etc.)
+        tags:
+          type: object
+          required:
+            - subnetID
+            - network
+          properties:
+            subnetID:
+              type: string
+              description: ID of the subnet containing the IP address within the backing CMDB.
+            network:
+              type: string
+              description: CIDR block with netmask for the subnet containing the IP address.
+            deviceID:
+              type: string
+              description: ID of the device associated with the IP address, if found, within the backing CMDB.
+            location:
+              type: string
+              description: Physical location of the asset. (Datacenter, office, etc.)
     Error:
       type: object
       properties:
