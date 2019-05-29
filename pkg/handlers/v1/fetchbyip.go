@@ -24,10 +24,11 @@ type PhysicalAssetDetails struct {
 // tags is the key-value pair structure that provides less important information than the
 // root keys of the PhysicalAssetDetails response.
 type tags struct {
-	SubnetID string `json:"subnetID"`
-	Network  string `json:"network"`
-	DeviceID string `json:"deviceID"`
-	Location string `json:"location"`
+	Network    string `json:"network"`
+	Location   string `json:"location"`
+	DeviceID   string `json:"deviceID"`
+	SubnetID   string `json:"subnetID"`
+	CustomerID string `json:"customerID"`
 }
 
 // FetchByIPAddressHandler uses its PhysicalAssetFetcher implementation to serve fetch requests for
@@ -69,10 +70,11 @@ func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 		ResourceOwner: asset.ResourceOwner,
 		BusinessUnit:  asset.BusinessUnit,
 		Tags: tags{
-			SubnetID: asset.SubnetID,
-			Network:  asset.Network,
-			DeviceID: asset.DeviceID,
-			Location: asset.Location,
+			Network:    asset.Network,
+			Location:   asset.Location,
+			DeviceID:   asset.DeviceID,
+			SubnetID:   asset.SubnetID,
+			CustomerID: asset.CustomerID,
 		},
 	}
 }

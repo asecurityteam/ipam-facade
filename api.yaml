@@ -166,18 +166,21 @@ components:
             - subnetID
             - network
           properties:
-            subnetID:
-              type: string
-              description: ID of the subnet containing the IP address within the backing CMDB.
             network:
               type: string
               description: CIDR block with netmask for the subnet containing the IP address.
-            deviceID:
-              type: string
-              description: ID of the device associated with the IP address, if found, within the backing CMDB.
             location:
               type: string
               description: Physical location of the asset. (Datacenter, office, etc.)
+            deviceID:
+              type: string
+              description: ID of the device associated with the IP address, if found, within the backing CMDB.
+            subnetID:
+              type: string
+              description: ID of the subnet containing the IP address within the backing CMDB.
+            customerID:
+              type: string
+              description: ID of the customer associated with the subnet containing the IP address.
     Error:
       type: object
       properties:

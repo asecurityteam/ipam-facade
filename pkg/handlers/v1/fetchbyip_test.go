@@ -16,20 +16,22 @@ func TestPhysicalAssetToResponse(t *testing.T) {
 		IP:            "127.0.0.1",
 		ResourceOwner: "alice@example.com",
 		BusinessUnit:  "Security",
-		SubnetID:      "1",
 		Network:       "127.0.0.0/31",
-		DeviceID:      "1",
 		Location:      "",
+		DeviceID:      "1",
+		SubnetID:      "1",
+		CustomerID:    "1",
 	}
 	expectedResult := PhysicalAssetDetails{
 		IP:            "127.0.0.1",
 		ResourceOwner: "alice@example.com",
 		BusinessUnit:  "Security",
 		Tags: tags{
-			SubnetID: "1",
-			Network:  "127.0.0.0/31",
-			DeviceID: "1",
-			Location: "",
+			Network:    "127.0.0.0/31",
+			Location:   "",
+			DeviceID:   "1",
+			SubnetID:   "1",
+			CustomerID: "1",
 		},
 	}
 
@@ -99,10 +101,11 @@ func TestFetchHandlerSuccess(t *testing.T) {
 		IP:            "127.0.0.1",
 		ResourceOwner: "alice@example.com",
 		BusinessUnit:  "Security",
-		SubnetID:      "1",
 		Network:       "127.0.0.0/31",
-		DeviceID:      "1",
 		Location:      "",
+		DeviceID:      "1",
+		SubnetID:      "1",
+		CustomerID:    "1",
 	}
 
 	mockPhysicalAssetFetcher := NewMockPhysicalAssetFetcher(ctrl)
