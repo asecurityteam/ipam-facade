@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 // Device represents a physical device with a network interface on the stored IP address.
 type Device struct {
 	ID       string
@@ -28,4 +30,19 @@ type IPAMData struct {
 	Devices   []Device
 	Subnets   []Subnet
 	Customers []Customer
+}
+
+// SubnetFetcher is an interface to fetch Subnet information
+type SubnetFetcher interface {
+	FetchSubnets(ctx context.Context) ([]Subnet, error)
+}
+
+// DeviceFetcher is an interface to fetch Device information
+type DeviceFetcher interface {
+	FetchDevices(ctx context.Context) ([]Device, error)
+}
+
+// CustomerFetcher provides an interface for fetching customer data
+type CustomerFetcher interface {
+	FetchCustomers(ctx context.Context) ([]Customer, error)
 }
