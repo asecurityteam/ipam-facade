@@ -1,4 +1,4 @@
-package device42
+package ipamfetcher
 
 import (
 	"bytes"
@@ -13,6 +13,14 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
+
+type errReader struct {
+	Error error
+}
+
+func (r *errReader) Read(_ []byte) (int, error) {
+	return 0, r.Error
+}
 
 func TestFetchCustomers(t *testing.T) {
 	ctrl := gomock.NewController(t)

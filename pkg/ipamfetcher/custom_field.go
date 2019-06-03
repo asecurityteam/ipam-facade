@@ -1,4 +1,4 @@
-package device42
+package ipamfetcher
 
 type customField struct {
 	Key   string      `json:"key"`

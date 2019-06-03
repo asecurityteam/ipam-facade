@@ -1,4 +1,4 @@
-package device42
+package ipamfetcher
 
 import (
 	"context"
@@ -36,24 +36,19 @@ type ip struct {
 // Device42DeviceFetcher implements the DeviceFetcher interface to retrieve device information
 // from Device42
 type Device42DeviceFetcher struct {
-	Paginator Paginator
+	Iterator Iterator
 }
 
 // FetchDevices retrieve device information from Device42
 func (d *Device42DeviceFetcher) FetchDevices(ctx context.Context) ([]domain.Device, error) {
-	getDevicesResponse, err := d.Paginator.BatchPagedRequests(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	assets := make([]domain.Device, 0)
-	for _, response := range getDevicesResponse {
-		var getDevicePayload ipResponse
-		if err := json.Unmarshal(response, &getDevicePayload); err != nil {
+	for d.Iterator.Next() {
+		var devicesResponse ipResponse
+		currentPage := d.Iterator.Current()
+		if err := json.Unmarshal(currentPage.Body, &devicesResponse); err != nil {
 			return nil, err
 		}
-
-		for _, asset := range getDevicePayload.IPs {
+		for _, asset := range devicesResponse.IPs {
 			assets = append(assets, domain.Device{
 				IP:       asset.IP,
 				ID:       strconv.Itoa(asset.DeviceID),
@@ -61,6 +56,5 @@ func (d *Device42DeviceFetcher) FetchDevices(ctx context.Context) ([]domain.Devi
 			})
 		}
 	}
-
-	return assets, nil
+	return assets, d.Iterator.Close()
 }

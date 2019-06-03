@@ -1,4 +1,4 @@
-package device42
+package ipamfetcher
 
 import (
 	"context"
@@ -47,24 +47,19 @@ type subnet struct {
 // Device42SubnetFetcher implements the SubnetFetcher interface to retrieve subnet information
 // from Device42
 type Device42SubnetFetcher struct {
-	Paginator Paginator
+	Iterator Iterator
 }
 
 // FetchSubnets retrieves subnet information from Device42
 func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subnet, error) {
-	getSubnetsResponse, err := d.Paginator.BatchPagedRequests(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	subnets := make([]domain.Subnet, 0)
-	for _, response := range getSubnetsResponse {
-		var getSubnetPayload subnetResponse
-		if err := json.Unmarshal(response, &getSubnetPayload); err != nil {
+	for d.Iterator.Next() {
+		var subnetsResponse subnetResponse
+		currentPage := d.Iterator.Current()
+		if err := json.Unmarshal(currentPage.Body, &subnetsResponse); err != nil {
 			return nil, err
 		}
-
-		for _, subnet := range getSubnetPayload.Subnets {
+		for _, subnet := range subnetsResponse.Subnets {
 			subnets = append(subnets, domain.Subnet{
 				ID:         strconv.Itoa(subnet.SubnetID),
 				Network:    subnet.Network,
@@ -74,6 +69,5 @@ func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subn
 			})
 		}
 	}
-
-	return subnets, nil
+	return subnets, d.Iterator.Close()
 }
