@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
@@ -39,15 +38,13 @@ type contact struct {
 
 // Device42CustomerFetcher fetches customer data from Device42
 type Device42CustomerFetcher struct {
-	Client *http.Client
-	Host   *url.URL
+	Client   *http.Client
+	Endpoint *url.URL
 }
 
 // FetchCustomers fetches customers from IPAM
 func (d *Device42CustomerFetcher) FetchCustomers(ctx context.Context) ([]domain.Customer, error) {
-	u, _ := url.Parse(d.Host.String())
-	u.Path = path.Join("api", "1.0", "customers")
-	req, _ := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
+	req, _ := http.NewRequest(http.MethodGet, d.Endpoint.String(), http.NoBody)
 	res, err := d.Client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
