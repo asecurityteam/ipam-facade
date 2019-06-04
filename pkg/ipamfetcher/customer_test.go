@@ -33,9 +33,9 @@ func TestFetchCustomers(t *testing.T) {
 		},
 		nil,
 	)
-	host, _ := url.Parse("http://localhost")
+	endpoint, _ := url.Parse("http://locaEndpoint")
 
-	c := &Device42CustomerFetcher{Host: host, Client: &http.Client{Transport: mockRT}}
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
 
 	customers, err := c.FetchCustomers(context.Background())
 	assert.Nil(t, err)
@@ -79,9 +79,9 @@ func TestFetchCustomersRequestError(t *testing.T) {
 				test.response,
 				test.responseErr,
 			)
-			host, _ := url.Parse("http://localhost")
+			endpoint, _ := url.Parse("http://localhost")
 
-			c := &Device42CustomerFetcher{Host: host, Client: &http.Client{Transport: mockRT}}
+			c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
 
 			_, err := c.FetchCustomers(context.Background())
 			assert.NotNil(t, err)

@@ -24,6 +24,11 @@ services:
       - SERVERFULL_RUNTIME_STATS_DATADOG_ADDRESS=statsd:8125
       - SERVERFULL_RUNTIME_SIGNALS_INSTALLED=OS
       - SERVERFULL_RUNTIME_SIGNALS_OS_SIGNALS=15 2
+      - IPS_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/ips
+      - IPS_DEVICE42PAGEFETCHER_LIMIT=500
+      - SUBNETS_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/subnets
+      - SUBNETS_DEVICE42PAGEFETCHER_LIMIT=500
+      - CUSTOMER_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/customers
   gateway:
     build:
       context: .
