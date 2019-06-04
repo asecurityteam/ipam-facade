@@ -12,6 +12,10 @@ import (
 
 func main() {
 	ctx := context.Background()
+	source, err := settings.NewEnvSource(os.Environ())
+	if err != nil {
+		panic(err.Error())
+	}
 	fetchHandler := &v1.FetchByIPAddressHandler{
 		LogFn: domain.LoggerFromContext,
 	}
@@ -23,10 +27,6 @@ func main() {
 		"sync":      serverfull.NewFunction(syncHandler.Handle),
 	}
 
-	source, err := settings.NewEnvSource(os.Environ())
-	if err != nil {
-		panic(err.Error())
-	}
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
 	if err := serverfull.Start(ctx, source, fetcher); err != nil {
 		panic(err.Error())
