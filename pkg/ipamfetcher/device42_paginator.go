@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// PagedResponse represents a standard structure for Device42 paginated resposne payloads
+// PagedResponse represents a standard structure for Device42 paginated response payloads
 type PagedResponse struct {
 	TotalCount int `json:"total_count"`
 	Limit      int `json:"limit"`
