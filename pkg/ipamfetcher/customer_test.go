@@ -59,6 +59,11 @@ func TestFetchCustomersRequestError(t *testing.T) {
 			nil,
 		},
 		{
+			"non-200 ok response",
+			&http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte("unexpected error"))), StatusCode: http.StatusBadRequest},
+			nil,
+		},
+		{
 			"unmarshal error",
 			&http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte("notjson"))), StatusCode: http.StatusOK},
 			nil,

@@ -3,6 +3,7 @@ package ipamfetcher
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -56,6 +57,11 @@ func (d *Device42CustomerFetcher) FetchCustomers(ctx context.Context) ([]domain.
 	if err != nil {
 		return nil, err
 	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected error from device42 api: %d %s", res.StatusCode, res.Body)
+	}
+
 	var getCustomersResponse customersResponse
 	if err := json.Unmarshal(body, &getCustomersResponse); err != nil {
 		return nil, err
