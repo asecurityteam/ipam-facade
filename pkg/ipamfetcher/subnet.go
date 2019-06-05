@@ -47,15 +47,22 @@ type subnet struct {
 // Device42SubnetFetcher implements the SubnetFetcher interface to retrieve subnet information
 // from Device42
 type Device42SubnetFetcher struct {
-	Iterator Iterator
+	PageFetcher PageFetcher
+	Limit       int
 }
 
 // FetchSubnets retrieves subnet information from Device42
 func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subnet, error) {
+	iterator := Device42PageIterator{
+		Context:     ctx,
+		Limit:       d.Limit,
+		PageFetcher: d.PageFetcher,
+	}
+
 	subnets := make([]domain.Subnet, 0)
-	for d.Iterator.Next() {
+	for iterator.Next() {
 		var subnetsResponse subnetResponse
-		currentPage := d.Iterator.Current()
+		currentPage := iterator.Current()
 		if err := json.Unmarshal(currentPage.Body, &subnetsResponse); err != nil {
 			return nil, err
 		}
@@ -69,5 +76,5 @@ func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subn
 			})
 		}
 	}
-	return subnets, d.Iterator.Close()
+	return subnets, iterator.Close()
 }

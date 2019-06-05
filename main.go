@@ -60,13 +60,10 @@ func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Clie
 		return nil, err
 	}
 	devicesFetcher := &ipamfetcher.Device42DeviceFetcher{
-		Iterator: &ipamfetcher.Device42PageIterator{
-			Context: ctx,
-			Limit:   device42IPsConfig.Limit,
-			PageFetcher: &ipamfetcher.Device42PageFetcher{
-				Client:   http.DefaultClient,
-				Endpoint: device42IPsConfig.Endpoint,
-			},
+		Limit: device42IPsConfig.Limit,
+		PageFetcher: &ipamfetcher.Device42PageFetcher{
+			Client:   http.DefaultClient,
+			Endpoint: device42IPsConfig.Endpoint,
 		},
 	}
 
@@ -76,13 +73,10 @@ func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Clie
 		return nil, err
 	}
 	subnetsFetcher := &ipamfetcher.Device42SubnetFetcher{
-		Iterator: &ipamfetcher.Device42PageIterator{
-			Context: ctx,
-			Limit:   device42SubnetsConfig.Limit,
-			PageFetcher: &ipamfetcher.Device42PageFetcher{
-				Client:   http.DefaultClient,
-				Endpoint: device42SubnetsConfig.Endpoint,
-			},
+		Limit: device42SubnetsConfig.Limit,
+		PageFetcher: &ipamfetcher.Device42PageFetcher{
+			Client:   http.DefaultClient,
+			Endpoint: device42SubnetsConfig.Endpoint,
 		},
 	}
 

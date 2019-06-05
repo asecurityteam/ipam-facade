@@ -23,10 +23,7 @@ type Device42ClientComponent struct{}
 // Settings populates a set of default valid resource types for the Device42ClientSettings
 // if none are provided via config.
 func (d *Device42ClientComponent) Settings() *Device42ClientSettings {
-	return &Device42ClientSettings{
-		Endpoint: "",
-		Limit:    0,
-	}
+	return &Device42ClientSettings{}
 }
 
 // New constructs a Device42Client from a config.

@@ -81,7 +81,7 @@ func (it *Device42PageIterator) Close() error {
 
 // Next fetches the next page from the API and makes necessary updates to iterator state
 func (it *Device42PageIterator) Next() bool {
-	if it.offset >= it.totalCount {
+	if it.currentPage.TotalCount > 0 && it.offset >= it.totalCount {
 		return false
 	}
 

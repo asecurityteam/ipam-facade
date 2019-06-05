@@ -36,15 +36,22 @@ type ip struct {
 // Device42DeviceFetcher implements the DeviceFetcher interface to retrieve device information
 // from Device42
 type Device42DeviceFetcher struct {
-	Iterator Iterator
+	PageFetcher PageFetcher
+	Limit       int
 }
 
 // FetchDevices retrieve device information from Device42
 func (d *Device42DeviceFetcher) FetchDevices(ctx context.Context) ([]domain.Device, error) {
+	iterator := &Device42PageIterator{
+		Context:     ctx,
+		Limit:       d.Limit,
+		PageFetcher: d.PageFetcher,
+	}
+
 	assets := make([]domain.Device, 0)
-	for d.Iterator.Next() {
+	for iterator.Next() {
 		var devicesResponse ipResponse
-		currentPage := d.Iterator.Current()
+		currentPage := iterator.Current()
 		if err := json.Unmarshal(currentPage.Body, &devicesResponse); err != nil {
 			return nil, err
 		}
@@ -56,5 +63,5 @@ func (d *Device42DeviceFetcher) FetchDevices(ctx context.Context) ([]domain.Devi
 			})
 		}
 	}
-	return assets, d.Iterator.Close()
+	return assets, iterator.Close()
 }
