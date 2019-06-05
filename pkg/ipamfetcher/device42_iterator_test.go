@@ -65,40 +65,44 @@ func TestDevice42PageIteratorCurrent(t *testing.T) {
 func TestDevice42PageIteratorNext(t *testing.T) {
 	iteratorLimit := 1
 	tc := []struct {
-		name                string
-		itOffset            int
-		itTotalCount        int
-		shouldCallFetchPage bool
-		pageFetchError      error
-		expected            bool
-		expectedOffset      int
+		name                  string
+		itOffset              int
+		itTotalCount          int
+		currentPageTotalCount int
+		shouldCallFetchPage   bool
+		pageFetchError        error
+		expected              bool
+		expectedOffset        int
 	}{
 		{
-			name:                "success",
-			itOffset:            0,
-			itTotalCount:        10,
-			shouldCallFetchPage: true,
-			pageFetchError:      nil,
-			expected:            true,
-			expectedOffset:      1,
+			name:                  "success",
+			itOffset:              0,
+			itTotalCount:          10,
+			currentPageTotalCount: 10,
+			shouldCallFetchPage:   true,
+			pageFetchError:        nil,
+			expected:              true,
+			expectedOffset:        1,
 		},
 		{
-			name:                "PageFetcher error",
-			itOffset:            0,
-			itTotalCount:        10,
-			shouldCallFetchPage: true,
-			pageFetchError:      errors.New("request error"),
-			expected:            false,
-			expectedOffset:      0,
+			name:                  "PageFetcher error",
+			itOffset:              0,
+			itTotalCount:          10,
+			currentPageTotalCount: 10,
+			shouldCallFetchPage:   true,
+			pageFetchError:        errors.New("request error"),
+			expected:              false,
+			expectedOffset:        0,
 		},
 		{
-			name:                "offset greater than totalCount",
-			itOffset:            11,
-			itTotalCount:        10,
-			shouldCallFetchPage: false,
-			pageFetchError:      nil,
-			expected:            false,
-			expectedOffset:      11,
+			name:                  "offset greater than totalCount",
+			itOffset:              11,
+			itTotalCount:          10,
+			currentPageTotalCount: 10,
+			shouldCallFetchPage:   false,
+			pageFetchError:        nil,
+			expected:              false,
+			expectedOffset:        11,
 		},
 	}
 
@@ -113,6 +117,7 @@ func TestDevice42PageIteratorNext(t *testing.T) {
 			iterator := &Device42PageIterator{
 				PageFetcher: mockPageFetcher,
 				Limit:       iteratorLimit,
+				currentPage: PagedResponse{TotalCount: test.currentPageTotalCount},
 				offset:      test.itOffset,
 				totalCount:  test.itTotalCount,
 			}
