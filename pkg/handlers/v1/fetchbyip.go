@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net"
+	"strconv"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	"github.com/asecurityteam/ipam-facade/pkg/logs"
@@ -65,6 +66,12 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 // physicalAssetToResponse converts a PhysicalAsset structure into a PhysicalAssetDetails structure for the
 // handler's HTTP response body.
 func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
+	var deviceID string
+	if asset.DeviceID == 0 {
+		deviceID = ""
+	} else {
+		deviceID = strconv.FormatInt(asset.DeviceID, 10)
+	}
 	return PhysicalAssetDetails{
 		IP:            asset.IP,
 		ResourceOwner: asset.ResourceOwner,
@@ -72,9 +79,9 @@ func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 		Tags: tags{
 			Network:    asset.Network,
 			Location:   asset.Location,
-			DeviceID:   asset.DeviceID,
-			SubnetID:   asset.SubnetID,
-			CustomerID: asset.CustomerID,
+			DeviceID:   deviceID,
+			SubnetID:   strconv.FormatInt(asset.SubnetID, 10),
+			CustomerID: strconv.FormatInt(asset.CustomerID, 10),
 		},
 	}
 }

@@ -12,9 +12,9 @@ type PhysicalAsset struct {
 	BusinessUnit  string
 	Network       string
 	Location      string
-	DeviceID      string
-	SubnetID      string
-	CustomerID    string
+	DeviceID      int64
+	SubnetID      int64
+	CustomerID    int64
 }
 
 // PhysicalAssetFetcher retrieves a PhysicalAsset by its IP Address.

@@ -42,15 +42,15 @@ func TestSyncHandlerSuccess(t *testing.T) {
 	}
 
 	mockIPAMDataFetcher := NewMockIPAMDataFetcher(ctrl)
-	mockIPAMDataStorer := NewMockIPAMDataStorer(ctrl)
+	mockAssetStorer := NewMockPhysicalAssetStorer(ctrl)
 	handler := SyncIPAMDataHandler{
-		IPAMDataFetcher: mockIPAMDataFetcher,
-		IPAMDataStorer:  mockIPAMDataStorer,
-		LogFn:           testLogFn,
+		IPAMDataFetcher:     mockIPAMDataFetcher,
+		PhysicalAssetStorer: mockAssetStorer,
+		LogFn:               testLogFn,
 	}
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(ipamData, nil)
-	mockIPAMDataStorer.EXPECT().StoreIPAMData(gomock.Any(), ipamData).Return(nil)
+	mockAssetStorer.EXPECT().StorePhysicalAssets(gomock.Any(), ipamData).Return(nil)
 	err := handler.Handle(context.Background())
 	require.Equal(t, nil, err)
 }
@@ -60,11 +60,11 @@ func TestSyncHandlerIPAMDataFetchFailure(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockIPAMDataFetcher := NewMockIPAMDataFetcher(ctrl)
-	mockIPAMDataStorer := NewMockIPAMDataStorer(ctrl)
+	mockAssetStorer := NewMockPhysicalAssetStorer(ctrl)
 	handler := SyncIPAMDataHandler{
-		IPAMDataFetcher: mockIPAMDataFetcher,
-		IPAMDataStorer:  mockIPAMDataStorer,
-		LogFn:           testLogFn,
+		IPAMDataFetcher:     mockIPAMDataFetcher,
+		PhysicalAssetStorer: mockAssetStorer,
+		LogFn:               testLogFn,
 	}
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(domain.IPAMData{}, errors.New("boom"))
@@ -103,15 +103,15 @@ func TestSyncHandlerIPAMDataStorerFailure(t *testing.T) {
 	}
 
 	mockIPAMDataFetcher := NewMockIPAMDataFetcher(ctrl)
-	mockIPAMDataStorer := NewMockIPAMDataStorer(ctrl)
+	mockAssetStorer := NewMockPhysicalAssetStorer(ctrl)
 	handler := SyncIPAMDataHandler{
-		IPAMDataFetcher: mockIPAMDataFetcher,
-		IPAMDataStorer:  mockIPAMDataStorer,
-		LogFn:           testLogFn,
+		IPAMDataFetcher:     mockIPAMDataFetcher,
+		PhysicalAssetStorer: mockAssetStorer,
+		LogFn:               testLogFn,
 	}
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(ipamData, nil)
-	mockIPAMDataStorer.EXPECT().StoreIPAMData(gomock.Any(), ipamData).Return(errors.New("boom"))
+	mockAssetStorer.EXPECT().StorePhysicalAssets(gomock.Any(), ipamData).Return(errors.New("boom"))
 	err := handler.Handle(context.Background())
 	require.Equal(t, errors.New("boom"), err)
 }
