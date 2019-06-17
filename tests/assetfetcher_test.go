@@ -24,7 +24,7 @@ import (
 var ctx context.Context
 var conn *sql.DB
 var db *sqldb.PostgresDB
-var fetcher assetfetcher.PostgresPhysicalAssetFetcher
+var fetcher *assetfetcher.PostgresPhysicalAssetFetcher
 
 func TestMain(m *testing.M) {
 
@@ -64,7 +64,7 @@ func TestMain(m *testing.M) {
 		panic(err.Error())
 	}
 
-	fetcher = assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
+	fetcher = &assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
 
 	os.Exit(m.Run())
 }
