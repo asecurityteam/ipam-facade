@@ -15,9 +15,7 @@ import (
 
 func TestFetchPhysicalAssetDeviceFound(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -52,9 +50,7 @@ func TestFetchPhysicalAssetDeviceFound(t *testing.T) {
 
 func TestFetchPhysicalAssetSubnetFound(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -89,9 +85,7 @@ func TestFetchPhysicalAssetSubnetFound(t *testing.T) {
 
 func TestFetchPhysicalAssetNoResults(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -110,9 +104,7 @@ func TestFetchPhysicalAssetNoResults(t *testing.T) {
 
 func TestFetchPhysicalAssetUnexpectedError(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
