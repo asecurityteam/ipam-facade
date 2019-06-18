@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
-
+	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
+	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
+	"github.com/asecurityteam/ipam-facade/pkg/sqldb"
 	"github.com/asecurityteam/serverfull"
 	"github.com/asecurityteam/settings"
 )
@@ -19,12 +20,21 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
 	ipamClient, err := getIPAMClient(ctx, source)
 	if err != nil {
 		panic(err.Error())
 	}
+
+	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresdb := new(sqldb.PostgresDB)
+	if err = settings.NewComponent(ctx, source, postgresConfigComponent, postgresdb); err != nil {
+		panic(err.Error())
+	}
+	assetFetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: postgresdb}
 	fetchHandler := &v1.FetchByIPAddressHandler{
-		LogFn: domain.LoggerFromContext,
+		LogFn:                domain.LoggerFromContext,
+		PhysicalAssetFetcher: assetFetcher,
 	}
 	syncHandler := &v1.SyncIPAMDataHandler{
 		IPAMDataFetcher: ipamClient,

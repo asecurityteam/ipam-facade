@@ -24,8 +24,8 @@ type IPAMDataFetcherFailure struct {
 	Reason  string `logevent:"reason"`
 }
 
-// IPAMDataStorerFailure is logged when storing IPAM data fails.
-type IPAMDataStorerFailure struct {
+// AssetStorerFailure is logged when storing IPAM data fails.
+type AssetStorerFailure struct {
 	Message string `logevent:"message,default=ipam-data-storer-failure"`
 	Reason  string `logevent:"reason"`
 }

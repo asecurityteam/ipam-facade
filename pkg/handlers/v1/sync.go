@@ -10,9 +10,9 @@ import (
 // SyncIPAMDataHandler uses its IPAMDataFetcher implementation to serve sync requests
 // for refreshing the local IPAM data from the CMDB data source.
 type SyncIPAMDataHandler struct {
-	IPAMDataFetcher domain.IPAMDataFetcher
-	IPAMDataStorer  domain.IPAMDataStorer
-	LogFn           domain.LogFn
+	IPAMDataFetcher     domain.IPAMDataFetcher
+	PhysicalAssetStorer domain.PhysicalAssetStorer
+	LogFn               domain.LogFn
 }
 
 // Handle fetches IPAM data from a CMDB and stores the data locally.
@@ -25,8 +25,8 @@ func (h *SyncIPAMDataHandler) Handle(ctx context.Context) error {
 		return err
 	}
 
-	if err := h.IPAMDataStorer.StoreIPAMData(ctx, ipamData); err != nil {
-		logger.Error(logs.IPAMDataStorerFailure{Reason: err.Error()})
+	if err := h.PhysicalAssetStorer.StorePhysicalAssets(ctx, ipamData); err != nil {
+		logger.Error(logs.AssetStorerFailure{Reason: err.Error()})
 		return err
 	}
 
