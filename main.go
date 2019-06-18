@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
+	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
@@ -36,9 +37,11 @@ func main() {
 		LogFn:                domain.LoggerFromContext,
 		PhysicalAssetFetcher: assetFetcher,
 	}
+	assetStorer := &assetstorer.PostgresPhysicalAssetStorer{DB: postgresdb}
 	syncHandler := &v1.SyncIPAMDataHandler{
-		IPAMDataFetcher: ipamClient,
-		LogFn:           domain.LoggerFromContext,
+		IPAMDataFetcher:     ipamClient,
+		LogFn:               domain.LoggerFromContext,
+		PhysicalAssetStorer: assetStorer,
 	}
 	handlers := map[string]serverfull.Function{
 		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
