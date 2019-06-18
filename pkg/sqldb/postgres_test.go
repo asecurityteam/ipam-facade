@@ -31,7 +31,7 @@ func TestFetchPhysicalAssetsErrors(t *testing.T) {
 
 func TestDoesDBExistTrue(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection")
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 
 	thedb := PostgresDB{
@@ -43,12 +43,12 @@ func TestDoesDBExistTrue(t *testing.T) {
 
 	exists, _ := thedb.doesDBExist("somename")
 	require.True(t, exists, "DB.doesDBExist should have returned true")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestDoesDBExistFalse(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection")
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 
 	thedb := PostgresDB{
@@ -59,12 +59,12 @@ func TestDoesDBExistFalse(t *testing.T) {
 
 	exists, _ := thedb.doesDBExist("somename")
 	require.False(t, exists, "DB.doesDBExist should have returned false")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestDoesDBExistError(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection")
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 
 	thedb := PostgresDB{
@@ -75,7 +75,7 @@ func TestDoesDBExistError(t *testing.T) {
 
 	_, err = thedb.doesDBExist("somename")
 	require.Error(t, err, "DB.doesDBExist should have returned a non-nil error")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestCreateDBSuccess(t *testing.T) {
@@ -91,12 +91,12 @@ func TestCreateDBSuccess(t *testing.T) {
 
 	err = thedb.create("somename")
 	require.Nil(t, err, "DB.create should have returned a nil error")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestCreateDBError(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection")
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 
 	thedb := PostgresDB{
@@ -107,12 +107,12 @@ func TestCreateDBError(t *testing.T) {
 
 	err = thedb.create("somename")
 	require.Error(t, err, "DB.create should have returned a non-nil error")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestDBUseError(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection")
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
 	defer mockdb.Close()
 
 	thedb := PostgresDB{
@@ -123,7 +123,7 @@ func TestDBUseError(t *testing.T) {
 
 	err = thedb.Use(context.Background(), "somename")
 	require.Error(t, err, "DB.use should have returned a non-nil error")
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestRunScriptTxFailBegin(t *testing.T) {
@@ -138,7 +138,7 @@ func TestRunScriptTxFailBegin(t *testing.T) {
 	}
 
 	require.Error(t, thedb.RunScript(context.Background(), "script1"))
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestRunScriptTxRollbackOnFail(t *testing.T) {
@@ -155,7 +155,7 @@ func TestRunScriptTxRollbackOnFail(t *testing.T) {
 	}
 
 	require.Error(t, thedb.RunScript(context.Background(), "script1"))
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestRunScriptTxRollbackFail(t *testing.T) {
@@ -172,7 +172,7 @@ func TestRunScriptTxRollbackFail(t *testing.T) {
 	}
 
 	require.Error(t, thedb.RunScript(context.Background(), "script1"))
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
 
 func TestRunScriptTxCommit(t *testing.T) {
@@ -188,5 +188,5 @@ func TestRunScriptTxCommit(t *testing.T) {
 		scripts: scriptFound,
 	}
 	require.NoError(t, thedb.RunScript(context.Background(), "script1"))
-	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s")
+	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
 }
