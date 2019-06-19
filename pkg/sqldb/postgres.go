@@ -5,10 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+
+	pq "github.com/lib/pq"
 )
 
 const (
-	createScript = "2_create.sql"
+	createScript             = "2_create.sql"
+	pqUniqueViolationErrCode = "23505"
 )
 
 // PostgresDB is a SQLDB implementation that uses a PostgreSQL database connection pool.
@@ -68,7 +71,18 @@ func (db *PostgresDB) Init(ctx context.Context, host, port, username, password, 
 
 			if !dbExists {
 				err = db.create(dbname)
-				if err != nil {
+				switch err.(type) {
+				case nil:
+				case *pq.Error:
+					// There can be race conditions if multiple instances of this service
+					// attempt to create the underlying database concurrently. If the error
+					// code corresponds to duplicate key usage, it is ignored.
+					pqErr := err.(*pq.Error)
+					if pqErr.Code != pqUniqueViolationErrCode {
+						initerr = pqErr
+						return
+					}
+				default:
 					initerr = err
 					return // from the unnamed once.Do function
 				}
@@ -84,7 +98,22 @@ func (db *PostgresDB) Init(ctx context.Context, host, port, username, password, 
 			}
 
 		}
-		initerr = db.RunScript(ctx, createScript)
+		err := db.RunScript(ctx, createScript)
+		switch err.(type) {
+		case nil:
+		case *pq.Error:
+			// The same race condition for creating the database exists for
+			// concurrently creating the tables, in which case the error
+			// is ignored.
+			pqErr := err.(*pq.Error)
+			if pqErr.Code != pqUniqueViolationErrCode {
+				initerr = pqErr
+				return
+			}
+		default:
+			initerr = err
+			return // from the unnamed once.Do function
+		}
 
 	})
 	return initerr
