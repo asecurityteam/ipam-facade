@@ -46,9 +46,9 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_Success(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO "+tableCustomers).WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO "+tableSubnets).WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO "+tableDevices).WithArgs(device.ID, device.IP, device.SubnetID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -92,9 +92,9 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_RollbackError(t *testin
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO "+tableCustomers).WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO "+tableSubnets).WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO "+tableDevices).WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback().WillReturnError(fmt.Errorf("rollback error"))
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -140,7 +140,7 @@ func TestPostgresPhysicalAssetStorer_storeDevice_Error(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO "+tableDevices).WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -171,7 +171,7 @@ func TestPostgresPhysicalAssetStorer_storeSubnet_Error(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO "+tableSubnets).WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -201,7 +201,7 @@ func TestPostgresPhysicalAssetStorer_storeCustomer_Error(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO "+tableCustomers).WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}

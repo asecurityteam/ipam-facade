@@ -3,16 +3,15 @@ package assetstorer
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	"github.com/pkg/errors"
 )
 
 const (
-	tableCustomers = "customers"
-	tableSubnets   = "subnets"
-	tableDevices   = "devices"
+	insertCustomerStatement = `INSERT INTO customers VALUES ($1, $2, $3)`
+	insertSubnetStatement   = `INSERT INTO subnets VALUES ($1, $2, $3, $4)`
+	insertDeviceStatement   = `INSERT INTO devices VALUES ($1, $2, $3)`
 )
 
 // PostgresPhysicalAssetStorer stores physical assets in a PostgreSQL database.
@@ -59,11 +58,8 @@ func (s *PostgresPhysicalAssetStorer) savePhysicalAssets(ctx context.Context, ip
 	return nil
 }
 
-func (s *PostgresPhysicalAssetStorer) storeDevice(ctx context.Context, device domain.Device, tx *sql.Tx) error {
-	// nolint
-	stmt := fmt.Sprintf(`INSERT INTO %s VALUES ($1, $2, $3)`, tableDevices)
-
-	if _, err := tx.ExecContext(ctx, stmt, device.ID, device.IP, device.SubnetID); err != nil {
+func (s *PostgresPhysicalAssetStorer) storeCustomer(ctx context.Context, customer domain.Customer, tx *sql.Tx) error {
+	if _, err := tx.ExecContext(ctx, insertCustomerStatement, customer.ID, customer.ResourceOwner, customer.BusinessUnit); err != nil {
 		return err
 	}
 
@@ -71,21 +67,15 @@ func (s *PostgresPhysicalAssetStorer) storeDevice(ctx context.Context, device do
 }
 
 func (s *PostgresPhysicalAssetStorer) storeSubnet(ctx context.Context, subnet domain.Subnet, tx *sql.Tx) error {
-	// nolint
-	stmt := fmt.Sprintf(`INSERT INTO %s VALUES ($1, $2, $3, $4)`, tableSubnets)
-
-	if _, err := tx.ExecContext(ctx, stmt, subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID); err != nil {
+	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *PostgresPhysicalAssetStorer) storeCustomer(ctx context.Context, customer domain.Customer, tx *sql.Tx) error {
-	// nolint
-	stmt := fmt.Sprintf(`INSERT INTO %s VALUES ($1, $2, $3)`, tableCustomers)
-
-	if _, err := tx.ExecContext(ctx, stmt, customer.ID, customer.ResourceOwner, customer.BusinessUnit); err != nil {
+func (s *PostgresPhysicalAssetStorer) storeDevice(ctx context.Context, device domain.Device, tx *sql.Tx) error {
+	if _, err := tx.ExecContext(ctx, insertDeviceStatement, device.ID, device.IP, device.SubnetID); err != nil {
 		return err
 	}
 
