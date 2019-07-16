@@ -50,13 +50,14 @@ func (d *Device42CustomerFetcher) FetchCustomers(ctx context.Context) ([]domain.
 		return nil, err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected error from device42 api: %d", res.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected error from device42 api: %d %s", res.StatusCode, res.Body)
 	}
 
 	var getCustomersResponse customersResponse
