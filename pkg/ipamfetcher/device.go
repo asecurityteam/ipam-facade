@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
-	"time"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
@@ -17,20 +16,9 @@ type ipResponse struct {
 }
 
 type ip struct {
-	Available    string       `json:"available"`
-	CustomFields customFields `json:"custom_fields"`
-	Device       string       `json:"device"`
-	DeviceID     int          `json:"device_id"`
-	ID           int          `json:"id"`
-	IP           string       `json:"ip"`
-	Label        string       `json:"label"`
-	LastUpdated  time.Time    `json:"last_updated"`
-	MacAddress   string       `json:"mac_address"`
-	MacID        int          `json:"mac_id"`
-	Notes        string       `json:"notes"`
-	Subnet       string       `json:"subnet"`
-	SubnetID     int          `json:"subnet_id"`
-	Type         string       `json:"type"`
+	DeviceID int    `json:"device_id"`
+	IP       string `json:"ip"`
+	SubnetID int    `json:"subnet_id"`
 }
 
 // Device42DeviceFetcher implements the DeviceFetcher interface to retrieve device information

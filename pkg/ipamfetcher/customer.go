@@ -17,23 +17,9 @@ type customersResponse struct {
 }
 
 type customer struct {
-	Contacts     []contact    `json:"Contacts"`
 	CustomFields customFields `json:"Custom Fields"`
 	ContactInfo  string       `json:"contact_info"`
-	DevicesURL   string       `json:"devices_url"`
-	Groups       string       `json:"groups"`
 	ID           int          `json:"id"`
-	Name         string       `json:"name"`
-	Notes        string       `json:"notes"`
-	SubnetsURL   string       `json:"subnets_url"`
-}
-
-type contact struct {
-	Address string `json:"address"`
-	Email   string `json:"email"`
-	Name    string `json:"name"`
-	Phone   string `json:"phone"`
-	Type    string `json:"type"`
 }
 
 // Device42CustomerFetcher fetches customer data from Device42

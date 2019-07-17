@@ -16,32 +16,11 @@ type subnetResponse struct {
 }
 
 type subnet struct {
-	Allocated             string       `json:"allocated"`
-	AllowBroadcastAddress string       `json:"allow_broadcast_address"`
-	AllowNetworkAddress   string       `json:"allow_network_address"`
-	Assigned              string       `json:"assigned"`
-	CanEdit               string       `json:"can_edit"`
-	CategoryID            int          `json:"category_id"`
-	CategoryName          string       `json:"category_name"`
-	CustomFields          customFields `json:"custom_fields"`
-	CustomerID            int          `json:"customer_id"`
-	Description           string       `json:"description"`
-	Gateway               string       `json:"gateway"`
-	MaskBits              int          `json:"mask_bits"`
-	Name                  string       `json:"name"`
-	Network               string       `json:"network"`
-	Notes                 string       `json:"notes"`
-	ParentSubnetID        int          `json:"parent_subnet_id"`
-	ParentVLANID          int          `json:"parent_vlan_id"`
-	ParentVLANName        string       `json:"parent_vlan_name"`
-	ParentVLANNumber      string       `json:"parent_vlan_number"`
-	RangeBegin            string       `json:"range_begin"`
-	RangeEnd              string       `json:"range_end"`
-	ServiceLevel          string       `json:"service_level"`
-	SubnetID              int          `json:"subnet_id"`
-	Tags                  []string     `json:"tags"`
-	VRFGroupID            int          `json:"vrf_group_id"`
-	VRFGroupName          string       `json:"vrf_group_name"`
+	CustomFields customFields `json:"custom_fields"`
+	CustomerID   int          `json:"customer_id"`
+	MaskBits     int          `json:"mask_bits"`
+	Network      string       `json:"network"`
+	SubnetID     int          `json:"subnet_id"`
 }
 
 // Device42SubnetFetcher implements the SubnetFetcher interface to retrieve subnet information
