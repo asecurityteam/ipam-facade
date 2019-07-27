@@ -61,6 +61,7 @@ type Device42PageIterator struct {
 	currentPage PagedResponse
 	offset      int
 	totalCount  int
+	exhausted   bool
 }
 
 // Current returns the current response if there are no issues with the state of the iterator
@@ -68,7 +69,7 @@ func (it *Device42PageIterator) Current() PagedResponse {
 	// Always have a guard against calls to `Current()` after the
 	// iterator is complete. This is technically an invalid call
 	// so "user beware" but this will prevent a panic condition.
-	if it.offset > it.totalCount || it.err != nil {
+	if it.exhausted || it.err != nil {
 		return PagedResponse{}
 	}
 	return it.currentPage
@@ -82,6 +83,7 @@ func (it *Device42PageIterator) Close() error {
 // Next fetches the next page from the API and makes necessary updates to iterator state
 func (it *Device42PageIterator) Next() bool {
 	if it.currentPage.TotalCount > 0 && it.offset >= it.totalCount {
+		it.exhausted = true
 		return false
 	}
 
