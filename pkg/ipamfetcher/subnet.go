@@ -49,7 +49,7 @@ func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subn
 		}
 		for _, subnet := range subnetsResponse.Subnets {
 			if subnet.CustomerID == 0 {
-				// CustomID is required as a FK in the datastore. If missing, log and move on.
+				// CustomerID is required as a FK in the datastore. If missing, log and move on.
 				d.LogFn(ctx).Info(logs.InvalidSubnet{
 					ID:     subnet.SubnetID,
 					Reason: "Missing customer ID in subnet",
