@@ -44,8 +44,8 @@ func TestDevice42PageIteratorCurrent(t *testing.T) {
 			expectedResponse: PagedResponse{Offset: 1},
 		},
 		{
-			name:             "offset greater than totalCount",
-			it:               &Device42PageIterator{offset: 11, totalCount: 10, currentPage: PagedResponse{Offset: 10}},
+			name:             "exhausted",
+			it:               &Device42PageIterator{exhausted: true, currentPage: PagedResponse{Offset: 10}},
 			expectedResponse: PagedResponse{},
 		},
 		{
@@ -73,6 +73,7 @@ func TestDevice42PageIteratorNext(t *testing.T) {
 		pageFetchError        error
 		expected              bool
 		expectedOffset        int
+		exhausted             bool
 	}{
 		{
 			name:                  "success",
@@ -103,6 +104,7 @@ func TestDevice42PageIteratorNext(t *testing.T) {
 			pageFetchError:        nil,
 			expected:              false,
 			expectedOffset:        11,
+			exhausted:             true,
 		},
 	}
 
@@ -125,6 +127,7 @@ func TestDevice42PageIteratorNext(t *testing.T) {
 			actual := iterator.Next()
 			assert.Equal(tt, test.expected, actual)
 			assert.Equal(tt, test.expectedOffset, iterator.offset)
+			assert.Equal(tt, test.exhausted, iterator.exhausted)
 		})
 	}
 }
