@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
+	"github.com/asecurityteam/ipam-facade/pkg/logs"
 )
 
 type subnetResponse struct {
@@ -28,6 +29,7 @@ type subnet struct {
 type Device42SubnetFetcher struct {
 	PageFetcher PageFetcher
 	Limit       int
+	LogFn       domain.LogFn
 }
 
 // FetchSubnets retrieves subnet information from Device42
@@ -46,6 +48,14 @@ func (d *Device42SubnetFetcher) FetchSubnets(ctx context.Context) ([]domain.Subn
 			return nil, err
 		}
 		for _, subnet := range subnetsResponse.Subnets {
+			if subnet.CustomerID == 0 {
+				// CustomerID is required as a FK in the datastore. If missing, log and move on.
+				d.LogFn(ctx).Info(logs.InvalidSubnet{
+					ID:     subnet.SubnetID,
+					Reason: "Missing customer ID in subnet",
+				})
+				continue
+			}
 			subnets = append(subnets, domain.Subnet{
 				ID:         strconv.Itoa(subnet.SubnetID),
 				Network:    subnet.Network,
