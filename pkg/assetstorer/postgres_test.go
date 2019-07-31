@@ -24,7 +24,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_Success(t *testing.T) {
 	device := domain.Device{
 		ID:       "1",
 		IP:       "127.0.0.1",
-		SubnetID: "1",
+		SubnetID: "2",
 	}
 	subnet := domain.Subnet{
 		ID:         "1",
@@ -48,7 +48,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_Success(t *testing.T) {
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, device.ID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -94,7 +94,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_RollbackError(t *testin
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, device.ID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback().WillReturnError(fmt.Errorf("rollback error"))
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -118,35 +118,6 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_TxBeginError(t *testing
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
 	e := storer.StorePhysicalAssets(context.Background(), domain.IPAMData{})
 	require.Error(t, e)
-}
-
-func TestPostgresPhysicalAssetStorer_storeDevice_Error(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockSQLDB := NewMockSQLDB(ctrl)
-
-	mockdb, mock, err := sqlmock.New()
-	require.Nil(t, err)
-	defer mockdb.Close()
-	mockSQLDB.EXPECT().Conn().Return(mockdb)
-
-	device := domain.Device{
-		ID:       "1",
-		IP:       "127.0.0.1",
-		SubnetID: "1",
-	}
-	ipamData := domain.IPAMData{
-		Devices: []domain.Device{device},
-	}
-
-	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO devices").WithArgs(device.ID, device.IP, device.SubnetID).WillReturnError(fmt.Errorf("some error"))
-	mock.ExpectRollback()
-
-	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
-	e := storer.StorePhysicalAssets(context.Background(), ipamData)
-	require.Error(t, e)
-	require.Nil(t, mock.ExpectationsWereMet())
 }
 
 func TestPostgresPhysicalAssetStorer_storeSubnet_Error(t *testing.T) {
@@ -202,6 +173,35 @@ func TestPostgresPhysicalAssetStorer_storeCustomer_Error(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectRollback()
+
+	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
+	e := storer.StorePhysicalAssets(context.Background(), ipamData)
+	require.Error(t, e)
+	require.Nil(t, mock.ExpectationsWereMet())
+}
+
+func TestPostgresPhysicalAssetStorer_storeIP_Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockSQLDB := NewMockSQLDB(ctrl)
+
+	mockdb, mock, err := sqlmock.New()
+	require.Nil(t, err)
+	defer mockdb.Close()
+	mockSQLDB.EXPECT().Conn().Return(mockdb)
+
+	device := domain.Device{
+		ID:       "1",
+		IP:       "127.0.0.1",
+		SubnetID: "2",
+	}
+	ipamData := domain.IPAMData{
+		Devices: []domain.Device{device},
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, device.ID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
