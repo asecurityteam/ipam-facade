@@ -19,9 +19,9 @@ IF NOT EXISTS subnets
 CREATE TABLE
 IF NOT EXISTS ips
 (
-    PRIMARY KEY (ip, device_id),
-    ip INET,
+    id SERIAL PRIMARY KEY,
+    ip INET NOT NULL,
     subnet_id INTEGER NOT NULL,
     FOREIGN KEY (subnet_id) REFERENCES subnets (id) ON DELETE CASCADE,
-    device_id INTEGER NOT NULL
+    device_id INTEGER
 );

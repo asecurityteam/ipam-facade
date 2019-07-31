@@ -11,7 +11,7 @@ import (
 const (
 	insertCustomerStatement = `INSERT INTO customers VALUES ($1, $2, $3)`
 	insertSubnetStatement   = `INSERT INTO subnets VALUES ($1, $2, $3, $4)`
-	insertIPStatement       = `INSERT INTO ips VALUES ($1, $2, $3)`
+	insertIPStatement       = `INSERT INTO ips VALUES (DEFAULT, $1, $2, $3)`
 )
 
 // PostgresPhysicalAssetStorer stores physical assets in a PostgreSQL database.
@@ -75,7 +75,11 @@ func (s *PostgresPhysicalAssetStorer) storeSubnet(ctx context.Context, subnet do
 }
 
 func (s *PostgresPhysicalAssetStorer) storeIP(ctx context.Context, device domain.Device, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, insertIPStatement, device.IP, device.SubnetID, device.ID); err != nil {
+	var deviceID *string
+	if device.ID != "" {
+		deviceID = &device.ID
+	}
+	if _, err := tx.ExecContext(ctx, insertIPStatement, device.IP, device.SubnetID, deviceID); err != nil {
 		return err
 	}
 

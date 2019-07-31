@@ -57,6 +57,54 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_Success(t *testing.T) {
 	require.Nil(t, mock.ExpectationsWereMet())
 }
 
+func TestPostgresPhysicalAssetStorer_StorePhysicalAssetsNoDeviceID_Success(t *testing.T) {
+	// I don't know if IPAM would ever return device info where the
+	// device lacks an ID, but we're gonna handle it if it does...
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockSQLDB := NewMockSQLDB(ctrl)
+
+	mockdb, mock, err := sqlmock.New()
+	require.Nil(t, err)
+	defer mockdb.Close()
+	mockSQLDB.EXPECT().Conn().Return(mockdb)
+
+	device := domain.Device{
+		// ID:       "1",  // intentionally commented out
+		IP:       "127.0.0.1",
+		SubnetID: "2",
+	}
+	subnet := domain.Subnet{
+		ID:         "1",
+		Network:    "127.0.0.0/31",
+		MaskBits:   1,
+		Location:   "",
+		CustomerID: "1",
+	}
+	customer := domain.Customer{
+		ID:            "1",
+		ResourceOwner: "alice@example.com",
+		BusinessUnit:  "Security",
+	}
+
+	ipamData := domain.IPAMData{
+		Devices:   []domain.Device{device},
+		Subnets:   []domain.Subnet{subnet},
+		Customers: []domain.Customer{customer},
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, nil).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
+	e := storer.StorePhysicalAssets(context.Background(), ipamData)
+	require.Nil(t, e)
+	require.Nil(t, mock.ExpectationsWereMet())
+}
+
 func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_RollbackError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
