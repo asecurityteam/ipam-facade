@@ -187,6 +187,78 @@ func TestDeviceAndSubnet(t *testing.T) {
 	require.Equal(t, expected, asset)
 }
 
+// TestDeviceAndSubnet verifies that a query for an IP address with a device match
+// returns both device and subnet information
+func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
+	// I don't know if IPAM would ever return device info where the
+	// device lacks an ID, but we're gonna handle it if it does...
+	t.Parallel()
+
+	customerID1 := rand.Int31()
+	customerID2 := rand.Int31()
+	subnetID := rand.Int31()
+
+	ipamData := domain.IPAMData{
+		Customers: []domain.Customer{
+			{
+				ID:            strconv.Itoa(int(customerID1)),
+				ResourceOwner: "alice@example.com",
+				BusinessUnit:  "Example Team",
+			},
+			{
+				ID:            strconv.Itoa(int(customerID2)),
+				ResourceOwner: "bob@example.com",
+				BusinessUnit:  "Team Example",
+			},
+		},
+		Subnets: []domain.Subnet{
+			{
+				ID:         strconv.Itoa(int(subnetID)),
+				Network:    "2.0.0.0/24",
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+		},
+		Devices: []domain.Device{
+			{
+				// ID intentionally omitted
+				IP:       "2.0.0.1",
+				SubnetID: strconv.Itoa(int(subnetID)),
+			},
+		},
+	}
+
+	ctx := context.Background()
+	source, err := settings.NewEnvSource(os.Environ())
+	require.Nil(t, err)
+
+	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	db := new(sqldb.PostgresDB)
+	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	defer db.Conn().Close()
+
+	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
+	err = storer.StorePhysicalAssets(ctx, ipamData)
+	require.Nil(t, err)
+
+	fetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
+	asset, err := fetcher.FetchPhysicalAsset(ctx, "2.0.0.1")
+	require.Nil(t, err)
+
+	expected := domain.PhysicalAsset{
+		IP:            "2.0.0.1",
+		ResourceOwner: "bob@example.com",
+		BusinessUnit:  "Team Example",
+		Network:       "2.0.0.0/24",
+		Location:      "Home",
+		DeviceID:      int64(0), // zero value expected
+		SubnetID:      int64(subnetID),
+		CustomerID:    int64(customerID2),
+	}
+
+	require.Equal(t, expected, asset)
+}
+
 // TestOverlappingSubnet verifies that a query for an IP address will return the
 // most specific subnet that matches, as measured by the subnet's netmask length
 func TestOverlappingSubnet(t *testing.T) {

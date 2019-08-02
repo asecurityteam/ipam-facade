@@ -7,17 +7,17 @@ import (
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
 
-const fetchByIPQuery = `SELECT host(d.ip) as ip, c.resource_owner as resource_owner,
+const fetchByIPQuery = `SELECT host(i.ip) as ip, c.resource_owner as resource_owner,
 							c.business_unit as business_unit, text(s.network) as network,
-							s.location as location, d.id as device_id, s.id as subnet_id,
+							s.location as location, device_id, s.id as subnet_id,
 							c.id as customer_id
-			            FROM devices d
+			            FROM ips i
 					  	RIGHT OUTER JOIN subnets s ON
-					  		d.subnet_id = s.id
-				  		AND d.ip = $1
+					  		i.subnet_id = s.id
+						AND i.ip = $1
 						INNER JOIN customers c ON s.customer_id = c.id
 						WHERE s.network >>= $1
-						ORDER BY d.id IS NOT NULL DESC, masklen(s.network) DESC
+						ORDER BY i.device_id IS NOT NULL DESC, masklen(s.network) DESC
 						LIMIT 1;`
 
 // PostgresPhysicalAssetFetcher physical assets from a PostgreSQL database by IP address.
