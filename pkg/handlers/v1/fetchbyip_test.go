@@ -148,4 +148,3 @@ func TestFetchHandlerSuccess(t *testing.T) {
 	require.Equal(t, asset.ResourceOwner, response.ResourceOwner)
 	require.Equal(t, asset.Location, response.Tags.Location)
 }
-
