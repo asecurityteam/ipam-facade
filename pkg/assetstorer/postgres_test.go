@@ -2,6 +2,7 @@ package assetstorer
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -97,6 +98,38 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssetsNoDeviceID_Success(t *te
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, nil).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
+	e := storer.StorePhysicalAssets(context.Background(), ipamData)
+	require.Nil(t, e)
+	require.Nil(t, mock.ExpectationsWereMet())
+}
+
+func TestPostgresPhysicalAssetStorer_StorePhysicalAssetsNoCustomerID_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockSQLDB := NewMockSQLDB(ctrl)
+
+	mockdb, mock, err := sqlmock.New()
+	require.Nil(t, err)
+	defer mockdb.Close()
+	mockSQLDB.EXPECT().Conn().Return(mockdb)
+
+	subnet := domain.Subnet{
+		ID:         "1",
+		Network:    "127.0.0.0/31",
+		MaskBits:   1,
+		Location:   "",
+		CustomerID: "0", // the zero value when IPAM returns "null" for the customer_id of a subnet
+	}
+
+	ipamData := domain.IPAMData{
+		Subnets: []domain.Subnet{subnet},
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, sql.NullString{}).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}

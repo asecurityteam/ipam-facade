@@ -15,7 +15,7 @@ const fetchByIPQuery = `SELECT host(i.ip) as ip, c.resource_owner as resource_ow
 					  	RIGHT OUTER JOIN subnets s ON
 					  		i.subnet_id = s.id
 						AND i.ip = $1
-						INNER JOIN customers c ON s.customer_id = c.id
+						LEFT OUTER JOIN customers c ON s.customer_id = c.id
 						WHERE s.network >>= $1
 						ORDER BY i.device_id IS NOT NULL DESC, masklen(s.network) DESC
 						LIMIT 1;`
@@ -30,9 +30,18 @@ func (f *PostgresPhysicalAssetFetcher) FetchPhysicalAsset(ctx context.Context, i
 	var asset domain.PhysicalAsset
 	var ip sql.NullString
 	var deviceID sql.NullInt64
+	var assetResourceOwner sql.NullString
+	var assetBusinessUnit sql.NullString
+	var assetCustomerID sql.NullInt64
 	err := f.DB.Conn().QueryRowContext(ctx, fetchByIPQuery, ipAddress).Scan(
-		&ip, &asset.ResourceOwner, &asset.BusinessUnit, &asset.Network,
-		&asset.Location, &deviceID, &asset.SubnetID, &asset.CustomerID)
+		&ip, &assetResourceOwner, &assetBusinessUnit, &asset.Network,
+		&asset.Location, &deviceID, &asset.SubnetID, &assetCustomerID)
+	if assetCustomerID.Valid {
+		// if we have a customerID from our query, we'll surely have the rest too:
+		asset.CustomerID = assetCustomerID.Int64
+		asset.ResourceOwner = assetResourceOwner.String
+		asset.BusinessUnit = assetBusinessUnit.String
+	}
 	switch {
 	case err == sql.ErrNoRows:
 		return domain.PhysicalAsset{}, domain.AssetNotFound{Inner: err, IP: ipAddress}

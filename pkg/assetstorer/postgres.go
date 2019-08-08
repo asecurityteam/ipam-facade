@@ -67,7 +67,7 @@ func (s *PostgresPhysicalAssetStorer) storeCustomer(ctx context.Context, custome
 }
 
 func (s *PostgresPhysicalAssetStorer) storeSubnet(ctx context.Context, subnet domain.Subnet, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID); err != nil {
+	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, newNullString(subnet.CustomerID)); err != nil {
 		return err
 	}
 
@@ -84,4 +84,14 @@ func (s *PostgresPhysicalAssetStorer) storeIP(ctx context.Context, device domain
 	}
 
 	return nil
+}
+
+func newNullString(s string) sql.NullString {
+	if len(s) == 0 || s == "0" {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }

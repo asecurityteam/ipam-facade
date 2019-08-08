@@ -91,7 +91,6 @@ func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Clie
 			Client:   http.DefaultClient,
 			Endpoint: device42SubnetsConfig.Endpoint,
 		},
-		LogFn: domain.LoggerFromContext,
 	}
 
 	device42CustomersClientComponent := &ipamfetcher.Device42ClientComponent{}
