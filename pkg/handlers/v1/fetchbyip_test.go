@@ -5,10 +5,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
 
 func TestPhysicalAssetToResponse(t *testing.T) {
