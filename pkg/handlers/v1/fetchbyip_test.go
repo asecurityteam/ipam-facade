@@ -39,6 +39,34 @@ func TestPhysicalAssetToResponse(t *testing.T) {
 	require.Equal(t, expectedResult, result)
 }
 
+func TestPhysicalAssetToResponseZeroValues(t *testing.T) {
+	asset := domain.PhysicalAsset{
+		IP:            "127.0.0.1",
+		ResourceOwner: "alice@example.com",
+		BusinessUnit:  "Security",
+		Network:       "127.0.0.0/31",
+		Location:      "",
+		DeviceID:      0,
+		SubnetID:      1,
+		CustomerID:    0,
+	}
+	expectedResult := PhysicalAssetDetails{
+		IP:            "127.0.0.1",
+		ResourceOwner: "alice@example.com",
+		BusinessUnit:  "Security",
+		Tags: tags{
+			Network:    "127.0.0.0/31",
+			Location:   "",
+			DeviceID:   "",
+			SubnetID:   "1",
+			CustomerID: "",
+		},
+	}
+
+	result := physicalAssetToResponse(asset)
+	require.Equal(t, expectedResult, result)
+}
+
 func TestFetchHandlerInvalidInput(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -121,3 +149,4 @@ func TestFetchHandlerSuccess(t *testing.T) {
 	require.Equal(t, asset.ResourceOwner, response.ResourceOwner)
 	require.Equal(t, asset.Location, response.Tags.Location)
 }
+

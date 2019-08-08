@@ -67,10 +67,16 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 // handler's HTTP response body.
 func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 	var deviceID string
+	var customerID string
 	if asset.DeviceID == 0 {
 		deviceID = ""
 	} else {
 		deviceID = strconv.FormatInt(asset.DeviceID, 10)
+	}
+	if asset.CustomerID == 0 {
+		customerID = ""
+	} else {
+		customerID = strconv.FormatInt(asset.CustomerID, 10)
 	}
 	return PhysicalAssetDetails{
 		IP:            asset.IP,
@@ -81,7 +87,7 @@ func physicalAssetToResponse(asset domain.PhysicalAsset) PhysicalAssetDetails {
 			Location:   asset.Location,
 			DeviceID:   deviceID,
 			SubnetID:   strconv.FormatInt(asset.SubnetID, 10),
-			CustomerID: strconv.FormatInt(asset.CustomerID, 10),
+			CustomerID: customerID,
 		},
 	}
 }
