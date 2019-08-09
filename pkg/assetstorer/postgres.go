@@ -3,6 +3,7 @@ package assetstorer
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	"github.com/pkg/errors"
@@ -78,7 +79,7 @@ func (s *PostgresPhysicalAssetStorer) storeCustomer(ctx context.Context, custome
 }
 
 func (s *PostgresPhysicalAssetStorer) storeSubnet(ctx context.Context, subnet domain.Subnet, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, newNullString(subnet.CustomerID)); err != nil {
+	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, newNullString(subnet.CustomerID)); err != nil {
 		return err
 	}
 

@@ -51,7 +51,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_Success(t *testing.T) {
 	mock.ExpectExec("DELETE FROM subnets").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM ips").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, device.ID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -102,7 +102,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssetsNoDeviceID_Success(t *te
 	mock.ExpectExec("DELETE FROM subnets").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM ips").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, nil).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -138,7 +138,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssetsNoCustomerID_Success(t *
 	mock.ExpectExec("DELETE FROM customers").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM subnets").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM ips").WillReturnResult(sqlmock.NewResult(0, 0))
-	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, sql.NullString{}).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, sql.NullString{}).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
@@ -186,7 +186,7 @@ func TestPostgresPhysicalAssetStorer_StorePhysicalAssets_RollbackError(t *testin
 	mock.ExpectExec("DELETE FROM subnets").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM ips").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("INSERT INTO customers").WithArgs(customer.ID, customer.ResourceOwner, customer.BusinessUnit).WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, subnet.CustomerID).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec("INSERT INTO ips").WithArgs(device.IP, device.SubnetID, device.ID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback().WillReturnError(fmt.Errorf("rollback error"))
 
@@ -238,7 +238,7 @@ func TestPostgresPhysicalAssetStorer_storeSubnet_Error(t *testing.T) {
 	mock.ExpectExec("DELETE FROM customers").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM subnets").WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectExec("DELETE FROM ips").WillReturnResult(sqlmock.NewResult(0, 0))
-	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID).WillReturnError(fmt.Errorf("some error"))
+	mock.ExpectExec("INSERT INTO subnets").WithArgs(subnet.ID, fmt.Sprintf("%s/%d", subnet.Network, subnet.MaskBits), subnet.Location, subnet.CustomerID).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	storer := PostgresPhysicalAssetStorer{DB: mockSQLDB}
