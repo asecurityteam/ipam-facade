@@ -78,7 +78,8 @@ func TestSubnetOnly(t *testing.T) {
 		Subnets: []domain.Subnet{
 			{
 				ID:         strconv.Itoa(int(subnetID)),
-				Network:    "1.0.0.0/24",
+				Network:    "1.0.0.0",
+				MaskBits:   24,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID)),
 			},
@@ -142,7 +143,8 @@ func TestDeviceAndSubnet(t *testing.T) {
 		Subnets: []domain.Subnet{
 			{
 				ID:         strconv.Itoa(int(subnetID)),
-				Network:    "2.0.0.0/24",
+				Network:    "2.0.0.0",
+				MaskBits:   24,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID2)),
 			},
@@ -214,7 +216,8 @@ func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
 		Subnets: []domain.Subnet{
 			{
 				ID:         strconv.Itoa(int(subnetID)),
-				Network:    "2.0.0.0/24",
+				Network:    "2.0.0.0",
+				MaskBits:   24,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID2)),
 			},
@@ -279,13 +282,15 @@ func TestOverlappingSubnet(t *testing.T) {
 		Subnets: []domain.Subnet{
 			{
 				ID:         strconv.Itoa(int(subnetID1)),
-				Network:    "3.0.0.0/24",
+				Network:    "3.0.0.0",
+				MaskBits:   24,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID)),
 			},
 			{
 				ID:         strconv.Itoa(int(subnetID2)),
-				Network:    "3.0.0.252/30",
+				Network:    "3.0.0.252",
+				MaskBits:   30,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID)),
 			},
@@ -345,13 +350,15 @@ func TestOverlappingSubnetWithDevice(t *testing.T) {
 		Subnets: []domain.Subnet{
 			{
 				ID:         strconv.Itoa(int(subnetID1)),
-				Network:    "4.0.0.0/24",
+				Network:    "4.0.0.0",
+				MaskBits:   24,
 				Location:   "Home",
 				CustomerID: strconv.Itoa(int(customerID)),
 			},
 			{
 				ID:         strconv.Itoa(int(subnetID2)),
-				Network:    "4.0.0.252/30",
+				Network:    "4.0.0.252",
+				MaskBits:   30,
 				Location:   "Home - Den",
 				CustomerID: strconv.Itoa(int(customerID)),
 			},
