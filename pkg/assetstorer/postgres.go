@@ -12,6 +12,9 @@ const (
 	insertCustomerStatement = `INSERT INTO customers VALUES ($1, $2, $3)`
 	insertSubnetStatement   = `INSERT INTO subnets VALUES ($1, $2, $3, $4)`
 	insertIPStatement       = `INSERT INTO ips VALUES (DEFAULT, $1, $2, $3)`
+	clearCustomerStatement  = `DELETE FROM customers`
+	clearSubnetStatement    = `DELETE FROM subnets`
+	clearIPStatement        = `DELETE FROM ips`
 )
 
 // PostgresPhysicalAssetStorer stores physical assets in a PostgreSQL database.
@@ -23,6 +26,14 @@ type PostgresPhysicalAssetStorer struct {
 func (s *PostgresPhysicalAssetStorer) StorePhysicalAssets(ctx context.Context, ipamData domain.IPAMData) error {
 	tx, err := s.DB.Conn().BeginTx(ctx, nil)
 	if err != nil {
+		return err
+	}
+
+	err = clearTables(ctx, tx)
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			return errors.Wrap(rollbackErr, err.Error())
+		}
 		return err
 	}
 
@@ -67,7 +78,7 @@ func (s *PostgresPhysicalAssetStorer) storeCustomer(ctx context.Context, custome
 }
 
 func (s *PostgresPhysicalAssetStorer) storeSubnet(ctx context.Context, subnet domain.Subnet, tx *sql.Tx) error {
-	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, subnet.CustomerID); err != nil {
+	if _, err := tx.ExecContext(ctx, insertSubnetStatement, subnet.ID, subnet.Network, subnet.Location, newNullString(subnet.CustomerID)); err != nil {
 		return err
 	}
 
@@ -84,4 +95,28 @@ func (s *PostgresPhysicalAssetStorer) storeIP(ctx context.Context, device domain
 	}
 
 	return nil
+}
+
+func clearTables(ctx context.Context, tx *sql.Tx) error {
+	if _, err := tx.ExecContext(ctx, clearCustomerStatement); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, clearSubnetStatement); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, clearIPStatement); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func newNullString(s string) sql.NullString {
+	if len(s) == 0 || s == "0" {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }

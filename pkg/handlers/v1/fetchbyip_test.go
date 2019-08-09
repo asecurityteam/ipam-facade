@@ -5,10 +5,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
 
 func TestPhysicalAssetToResponse(t *testing.T) {
@@ -32,6 +31,34 @@ func TestPhysicalAssetToResponse(t *testing.T) {
 			DeviceID:   "1",
 			SubnetID:   "1",
 			CustomerID: "1",
+		},
+	}
+
+	result := physicalAssetToResponse(asset)
+	require.Equal(t, expectedResult, result)
+}
+
+func TestPhysicalAssetToResponseZeroValues(t *testing.T) {
+	asset := domain.PhysicalAsset{
+		IP:            "127.0.0.1",
+		ResourceOwner: "alice@example.com",
+		BusinessUnit:  "Security",
+		Network:       "127.0.0.0/31",
+		Location:      "",
+		DeviceID:      0,
+		SubnetID:      1,
+		CustomerID:    0,
+	}
+	expectedResult := PhysicalAssetDetails{
+		IP:            "127.0.0.1",
+		ResourceOwner: "alice@example.com",
+		BusinessUnit:  "Security",
+		Tags: tags{
+			Network:    "127.0.0.0/31",
+			Location:   "",
+			DeviceID:   "",
+			SubnetID:   "1",
+			CustomerID: "",
 		},
 	}
 

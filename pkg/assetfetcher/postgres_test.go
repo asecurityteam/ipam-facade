@@ -83,6 +83,42 @@ func TestFetchPhysicalAssetSubnetFound(t *testing.T) {
 	}
 }
 
+func TestFetchPhysicalAssetSubnetFoundNoJoinedCustomer(t *testing.T) {
+	mockdb, mock, err := sqlmock.New()
+	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)
+	defer mockdb.Close()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mocksqldb := NewMockSQLDB(ctrl)
+	mocksqldb.EXPECT().Conn().Return(mockdb)
+	rows := sqlmock.NewRows([]string{
+		"ip", "resource_owner", "business_unit", "network", "location",
+		"device_id", "subnet_id", "customer_id"}).AddRow(
+		nil, "alice@example.com", "Acme", "127.0.0.1/32", "Home", nil, 1, nil)
+	mock.ExpectQuery("SELECT").WillReturnRows(rows).RowsWillBeClosed()
+	fetcher := PostgresPhysicalAssetFetcher{DB: mocksqldb}
+
+	// fields are intentionally commented out
+	expectedAsset := domain.PhysicalAsset{
+		IP: "127.0.0.1",
+		// ResourceOwner: "alice@example.com",
+		// BusinessUnit:  "Acme",
+		Network:  "127.0.0.1/32",
+		Location: "Home",
+		DeviceID: 0,
+		SubnetID: 1,
+		// CustomerID: 1,
+	}
+
+	asset, err := fetcher.FetchPhysicalAsset(context.Background(), "127.0.0.1")
+	require.Nil(t, err)
+	require.Equal(t, expectedAsset, asset)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestFetchPhysicalAssetNoResults(t *testing.T) {
 	mockdb, mock, err := sqlmock.New()
 	require.Nil(t, err, "an error '%s' was not expected when opening a stub database connection", err)

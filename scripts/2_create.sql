@@ -12,7 +12,8 @@ IF NOT EXISTS subnets
     id INTEGER PRIMARY KEY,
     network CIDR NOT NULL,
     location TEXT NOT NULL,
-    customer_id INTEGER NOT NULL,
+    -- intentionally nullable:
+    customer_id INTEGER,
     FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
 );
 
