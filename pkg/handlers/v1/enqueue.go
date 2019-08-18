@@ -8,12 +8,6 @@ import (
 	"github.com/asecurityteam/ipam-facade/pkg/logs"
 )
 
-// JobMetadata contains the aysnc task ID assigned to the
-// sync request used to check for completion
-type JobMetadata struct {
-	JobID string `json:"jobID"`
-}
-
 // EnqueueHandler enqueues IPAM data sync requests
 type EnqueueHandler struct {
 	Producer              producer.Producer
