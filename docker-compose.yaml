@@ -1,4 +1,14 @@
-version: '3'
+version: '3.4'
+x-common-variables: &common-variables
+  SERVERFULL_RUNTIME_LOGGER_OUTPUT: "STDOUT"
+  SERVERFULL_RUNTIME_LOGGER_LEVEL: "INFO"
+  SERVERFULL_RUNTIME_STATS_OUTPUT: "NULL"
+  SERVERFULL_RUNTIME_STATS_DATADOG_TAGS: ""
+  SERVERFULL_RUNTIME_STATS_DATADOG_PACKETSIZE: 32768
+  SERVERFULL_RUNTIME_STATS_DATADOG_FLUSHINTERVAL: 10s
+  SERVERFULL_RUNTIME_STATS_DATADOG_ADDRESS: statsd:8125
+  SERVERFULL_RUNTIME_SIGNALS_INSTALLED: OS
+  SERVERFULL_RUNTIME_SIGNALS_OS_SIGNALS: 15 2
 services:
   app:
     build:
@@ -15,15 +25,6 @@ services:
       - SERVERFULL_RUNTIME_CONNSTATE_ACTIVECOUNTER=http.server.connstate.active
       - SERVERFULL_RUNTIME_CONNSTATE_NEWGAUGE=http.server.connstate.new.gauge
       - SERVERFULL_RUNTIME_CONNSTATE_NEWCOUNTER=http.server.connstate.new
-      - SERVERFULL_RUNTIME_LOGGER_OUTPUT=STDOUT
-      - SERVERFULL_RUNTIME_LOGGER_LEVEL=INFO
-      - SERVERFULL_RUNTIME_STATS_OUTPUT=DATADOG
-      - SERVERFULL_RUNTIME_STATS_DATADOG_PACKETSIZE=32768
-      - SERVERFULL_RUNTIME_STATS_DATADOG_TAGS=
-      - SERVERFULL_RUNTIME_STATS_DATADOG_FLUSHINTERVAL=10s
-      - SERVERFULL_RUNTIME_STATS_DATADOG_ADDRESS=statsd:8125
-      - SERVERFULL_RUNTIME_SIGNALS_INSTALLED=OS
-      - SERVERFULL_RUNTIME_SIGNALS_OS_SIGNALS=15 2
       - IPAMFACADE_LAMBDAMODE: "false"
       - IPAMFACADE_PRODUCER_TYPE: "POST"
       - IPAMFACADE_PRODUCER_BENTHOS_YAML: ""
@@ -36,9 +37,25 @@ services:
       - SUBNETS_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/subnets
       - SUBNETS_DEVICE42PAGEFETCHER_LIMIT=500
       - CUSTOMER_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/customers
-  gateway:
+  gateway-incoming:
     build:
       context: .
-      dockerfile: gateway.Dockerfile
+      dockerfile: gateway-incoming.Dockerfile
+    environment:
+      <<: *common-variables
+      PORTS_GATEWAY_INCOMING: "8080"
     ports:
       - "8080:8080"
+  gateway-outgoing:
+    build:
+      context: .
+      dockerfile: gateway-outgoing.Dockerfile
+    environment:
+      <<: *common-variables
+      PORTS_GATEWAY_OUTGOING: "8082"
+      IPAM_API_HOST: "https://ipam-stg.net.atlassian.com"
+      IPAM_USERNAME: ""
+      IPAM_PASSWORD: ""
+      IPAM_TIMEOUT: "30s"
+    ports:
+      - "8082:8082"
