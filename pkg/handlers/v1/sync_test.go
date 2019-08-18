@@ -51,7 +51,7 @@ func TestSyncHandlerSuccess(t *testing.T) {
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(ipamData, nil)
 	mockAssetStorer.EXPECT().StorePhysicalAssets(gomock.Any(), ipamData).Return(nil)
-	err := handler.Handle(context.Background())
+	err := handler.Handle(context.Background(), JobMetadata{ID: "foo-bar-baz-quux"})
 	require.Equal(t, nil, err)
 }
 

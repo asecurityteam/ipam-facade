@@ -5,15 +5,51 @@ import (
 	"net/http"
 	"os"
 
+	producer "github.com/asecurityteam/component-producer"
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
+	"github.com/asecurityteam/ipam-facade/pkg/randomnumbergenerator"
 	"github.com/asecurityteam/ipam-facade/pkg/sqldb"
 	"github.com/asecurityteam/serverfull"
 	"github.com/asecurityteam/settings"
 )
+
+type producerConfig struct {
+	*producer.Config
+}
+
+func (*producerConfig) Name() string {
+	return "producer"
+}
+
+type config struct {
+	LambdaMode bool `description:"Use the Lambda SDK to start the system."`
+	Producer   *producerConfig
+}
+
+func (*config) Name() string {
+	return "ipamfacade"
+}
+
+type component struct {
+	Producer *producer.Component
+}
+
+func (c *component) Settings() *config {
+	return &config{
+		LambdaMode: false,
+		Producer:   &producerConfig{c.Producer.Settings()},
+	}
+}
+
+func newComponent() *component {
+	return &component{
+		Producer: producer.NewComponent(),
+	}
+}
 
 func main() {
 	ctx := context.Background()
@@ -43,9 +79,19 @@ func main() {
 		LogFn:               domain.LoggerFromContext,
 		PhysicalAssetStorer: assetStorer,
 	}
+	p, err := c.Producer.New(ctx, conf.Producer.Config)
+	if err != nil {
+		return nil, err
+	}
+	enqueueHandler := &v1.EnqueueHandler{
+		RandomNumberGenerator: &randomnumbergenerator.UUIDGenerator{},
+		Producer:              p,
+		LogFn:                 domain.LoggerFromContext,
+	}
 	handlers := map[string]serverfull.Function{
 		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
 		"sync":      serverfull.NewFunction(syncHandler.Handle),
+		"enqueue":   serverfull.NewFunction(enqueueHandler.Handle),
 	}
 
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
