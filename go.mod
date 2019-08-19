@@ -3,16 +3,16 @@ module github.com/asecurityteam/ipam-facade
 go 1.12
 
 require (
-	bitbucket.org/atlassian/go-asap v0.0.0-20190722160949-6299cb74d0f5 // indirect
+	bitbucket.org/atlassian/go-asap v2.4.0
 	github.com/DATA-DOG/go-sqlmock v1.3.3
-	github.com/Jeffail/benthos v0.0.0-20190606213305-7d8cf2585d7f // indirect
+	github.com/Jeffail/benthos v2.12.1
 	github.com/Jeffail/gabs v1.4.0 // indirect
 	github.com/asecurityteam/component-httpclient v0.1.0 // indirect
 	github.com/asecurityteam/component-producer v0.4.1
-	github.com/asecurityteam/httpstats v0.0.0-20190813145531-91840f2aba2e // indirect
-	github.com/asecurityteam/logevent v0.0.0-20190225122144-b32737d8d51c // indirect
-	github.com/asecurityteam/runhttp v0.0.0-20190611212819-e67777b27ba7
-	github.com/asecurityteam/serverfull v0.1.0
+	github.com/asecurityteam/httpstats 2.1.1
+	github.com/asecurityteam/logevent 1.0.4
+	github.com/asecurityteam/runhttp v0.2.0
+	github.com/asecurityteam/serverfull v0.4.0
 	github.com/asecurityteam/settings v0.1.0
 	github.com/asecurityteam/transport v0.0.0-20190813155007-28740eb8c05a // indirect
 	github.com/asecurityteam/transportd v0.4.2 // indirect

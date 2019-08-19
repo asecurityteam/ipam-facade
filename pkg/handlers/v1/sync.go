@@ -31,7 +31,7 @@ func (h *SyncIPAMDataHandler) Handle(ctx context.Context, jobMetadata JobMetadat
 	}
 
 	if len(jobMetadata.JobID) > 0 {
-		logger.Info(logs.DataSyncComplete{JobID: jobMetadata.JobID})
+		logger.Info(logs.DataSyncJobComplete{JobID: jobMetadata.JobID})
 	}
 
 	return nil
