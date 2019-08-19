@@ -20,14 +20,14 @@ func (h *EnqueueHandler) Handle(ctx context.Context) (JobMetadata, error) {
 	jobID, err := h.RandomNumberGenerator.NewRandom()
 	if err != nil {
 		h.LogFn(ctx).Error(logs.SyncError{Reason: err.Error()})
-		return &JobMetadata{}, err
+		return JobMetadata{}, err
 	}
-	jobMetadata := JobMetadata{JobID: jobID}
+	jobMetadata := JobMetadata{JobID: jobID.String()}
 
-	_, err := h.Producer.Produce(ctx, jobMetadata)
+	_, err = h.Producer.Produce(ctx, jobMetadata)
 	if err != nil {
 		h.LogFn(ctx).Error(logs.ProducerError{Reason: err.Error()})
-		return &JobMetadata{}, err
+		return JobMetadata{}, err
 	}
 
 	return jobMetadata, nil

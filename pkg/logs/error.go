@@ -22,14 +22,14 @@ type AssetFetcherFailure struct {
 type IPAMDataFetcherFailure struct {
 	Message string `logevent:"message,default=ipam-data-fetcher-failure"`
 	Reason  string `logevent:"reason"`
-	JobID   int    `logevent:"jobid"`
+	JobID   string `logevent:"jobid"`
 }
 
 // AssetStorerFailure is logged when storing IPAM data fails.
 type AssetStorerFailure struct {
 	Message string `logevent:"message,default=ipam-data-storer-failure"`
 	Reason  string `logevent:"reason"`
-	JobID   int    `logevent:"jobid"`
+	JobID   string `logevent:"jobid"`
 }
 
 // SyncError is emitted if the IPAM data sync fails

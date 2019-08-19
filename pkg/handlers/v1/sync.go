@@ -7,12 +7,6 @@ import (
 	"github.com/asecurityteam/ipam-facade/pkg/logs"
 )
 
-// JobMetadata contains the aysnc task ID assigned to the
-// sync request used to check for completion
-type JobMetadata struct {
-	JobID string `json:"jobID"`
-}
-
 // SyncIPAMDataHandler uses its IPAMDataFetcher implementation to serve sync requests
 // for refreshing the local IPAM data from the CMDB data source.
 type SyncIPAMDataHandler struct {

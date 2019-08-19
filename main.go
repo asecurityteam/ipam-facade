@@ -51,13 +51,7 @@ func newComponent() *component {
 	}
 }
 
-func main() {
-	ctx := context.Background()
-	source, err := settings.NewEnvSource(os.Environ())
-	if err != nil {
-		panic(err.Error())
-	}
-
+func (c *component) New(ctx context.Context, conf *config) (func(context.Context, settings.Source) error, error) {
 	ipamClient, err := getIPAMClient(ctx, source)
 	if err != nil {
 		panic(err.Error())
@@ -95,9 +89,14 @@ func main() {
 	}
 
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
-	if err := serverfull.Start(ctx, source, fetcher); err != nil {
-		panic(err.Error())
+	if conf.LambdaMode {
+		return func(ctx context.Context, source settings.Source) error {
+			return serverfull.StartLambda(ctx, source, fetcher, "filter")
+		}, nil
 	}
+	return func(ctx context.Context, source settings.Source) error {
+		return serverfull.StartHTTP(ctx, source, fetcher)
+	}, nil
 }
 
 func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Client, error) {
@@ -154,4 +153,22 @@ func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Clie
 		DeviceFetcher:   devicesFetcher,
 		SubnetFetcher:   subnetsFetcher,
 	}, nil
+}
+
+func main() {
+	source, err := settings.NewEnvSource(os.Environ())
+	if err != nil {
+		panic(err.Error())
+	}
+	ctx := context.Background()
+	runner := new(func(context.Context, settings.Source) error)
+	cmp := newComponent()
+
+	err = settings.NewComponent(ctx, source, cmp, runner)
+	if err != nil {
+		panic(err.Error())
+	}
+	if err := (*runner)(ctx, source); err != nil {
+		panic(err.Error())
+	}
 }
