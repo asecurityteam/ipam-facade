@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net/http"
 	"os"
 
 	producer "github.com/asecurityteam/component-producer"
@@ -29,7 +28,7 @@ type config struct {
 	LambdaMode bool `description:"Use the Lambda SDK to start the system."`
 	Producer   *producerConfig
 	Postgres   *sqldb.PostgresConfig
-	Device42 *ipamfetcher.Device42ClientConfig
+	Device42   *ipamfetcher.Device42ClientConfig
 }
 
 func (*config) Name() string {
@@ -46,8 +45,17 @@ func (c *component) Settings() *config {
 	return &config{
 		LambdaMode: false,
 		Producer:   &producerConfig{c.Producer.Settings()},
-		Postgres:   &sqldb.PostgresConfig{c.Postgres.Settings()},
-		Device42: &ipamfetcher.Device42ClientConfig{c.Device42.Settings()},
+		Postgres: &sqldb.PostgresConfig{
+			Hostname: c.Postgres.Settings().Hostname,
+			Port: c.Postgres.Settings().Port,
+			Username: c.Postgres.Settings().Username,
+			Password: c.Postgres.Settings().Password,
+			DatabaseName: c.Postgres.Settings().DatabaseName,
+		},
+		Device42: &ipamfetcher.Device42ClientConfig{
+			Endpoint: c.Device42.Settings().Endpoint,
+			Limit: c.Device42.Settings().Limit,
+		},
 	}
 }
 
@@ -70,7 +78,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		LogFn:                 domain.LoggerFromContext,
 	}
 
-	pgdb, err := c.Postgres.New(ctx, conf.PostgresConfig)
+	pgdb, err := c.Postgres.New(ctx, conf.Postgres)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +89,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	}
 
 	deviceFetcher := ipamfetcher.NewDevice42DeviceFetcher(dc)
-	subnetFetcher :=  ipamfetcher.NewDevice42SubnetFetcher(dc)
+	subnetFetcher := ipamfetcher.NewDevice42SubnetFetcher(dc)
 	customerFetcher := ipamfetcher.NewDevice42CustomerFetcher(dc)
 	ipamDataFetcher := &ipamfetcher.Client{
 		CustomerFetcher: customerFetcher,
@@ -89,7 +97,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		SubnetFetcher:   subnetFetcher,
 	}
 
-	assetFetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: pbdb}
+	assetFetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: pgdb}
 	fetchHandler := &v1.FetchByIPAddressHandler{
 		LogFn:                domain.LoggerFromContext,
 		PhysicalAssetFetcher: assetFetcher,

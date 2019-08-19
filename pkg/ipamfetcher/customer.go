@@ -24,7 +24,7 @@ type customer struct {
 }
 
 // NewDevice42CustomerFetcher generates a new Device42CustomerFetcher
-func NewDevice42CustomerFetcher(dc Device42Client) *Device42CustomerFetcher {
+func NewDevice42CustomerFetcher(dc *Device42Client) *Device42CustomerFetcher {
 	resourceEndpoint, _ := url.Parse(dc.Endpoint.String())
 	resourceEndpoint.Path = path.Join(resourceEndpoint.Path, "api", "1.0", "customers")
 	return &Device42CustomerFetcher{

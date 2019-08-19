@@ -26,10 +26,10 @@ type subnet struct {
 }
 
 // NewDevice42SubnetFetcher generates a new Device42SubnetFetcher
-func NewDevice42SubnetFetcher(dc Device42Client) *Device42DeviceFetcher {
+func NewDevice42SubnetFetcher(dc *Device42Client) *Device42SubnetFetcher {
 	resourceEndpoint, _ := url.Parse(dc.Endpoint.String())
 	resourceEndpoint.Path = path.Join(resourceEndpoint.Path, "api", "1.0", "subnets")
-	return &Device42DeviceFetcher{
+	return &Device42SubnetFetcher{
 		PageFetcher: &Device42PageFetcher{
 			Client:   dc.Client,
 			Endpoint: resourceEndpoint,
