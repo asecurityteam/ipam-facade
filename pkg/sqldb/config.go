@@ -20,17 +20,22 @@ func (c *PostgresConfig) Name() string {
 	return "Postgres"
 }
 
-// PostgresConfigComponent satisfies the settings library Component API,
+// NewPostgresComponent generates a new, unitialized PostgresComponent
+func NewPostgresComponent() *PostgresComponent {
+	return &PostgresComponent{}
+}
+
+// PostgresComponent satisfies the settings library Component API,
 // and may be used by the settings.NewComponent function.
-type PostgresConfigComponent struct{}
+type PostgresComponent struct{}
 
 // Settings populates a set of defaults if none are provided via config.
-func (*PostgresConfigComponent) Settings() *PostgresConfig {
+func (*PostgresComponent) Settings() *PostgresConfig {
 	return &PostgresConfig{}
 }
 
 // New constructs a DB from a config
-func (*PostgresConfigComponent) New(ctx context.Context, c *PostgresConfig) (*PostgresDB, error) {
+func (*PostgresComponent) New(ctx context.Context, c *PostgresConfig) (*PostgresDB, error) {
 	scripts := packr.New("scripts", "../../scripts")
 	db := &PostgresDB{
 		scripts: scripts.FindString,

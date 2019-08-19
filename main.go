@@ -28,6 +28,8 @@ func (*producerConfig) Name() string {
 type config struct {
 	LambdaMode bool `description:"Use the Lambda SDK to start the system."`
 	Producer   *producerConfig
+	Postgres   *sqldb.PostgresConfig
+	Device42 *ipamfetcher.Device42ClientConfig
 }
 
 func (*config) Name() string {
@@ -36,43 +38,28 @@ func (*config) Name() string {
 
 type component struct {
 	Producer *producer.Component
+	Postgres *sqldb.PostgresComponent
+	Device42 *ipamfetcher.Device42ClientComponent
 }
 
 func (c *component) Settings() *config {
 	return &config{
 		LambdaMode: false,
 		Producer:   &producerConfig{c.Producer.Settings()},
+		Postgres:   &sqldb.PostgresConfig{c.Postgres.Settings()},
+		Device42: &ipamfetcher.Device42ClientConfig{c.Device42.Settings()},
 	}
 }
 
 func newComponent() *component {
 	return &component{
 		Producer: producer.NewComponent(),
+		Postgres: sqldb.NewPostgresComponent(),
+		Device42: ipamfetcher.NewDevice42ClientComponent(),
 	}
 }
 
 func (c *component) New(ctx context.Context, conf *config) (func(context.Context, settings.Source) error, error) {
-	ipamClient, err := getIPAMClient(ctx, source)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
-	postgresdb := new(sqldb.PostgresDB)
-	if err = settings.NewComponent(ctx, source, postgresConfigComponent, postgresdb); err != nil {
-		panic(err.Error())
-	}
-	assetFetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: postgresdb}
-	fetchHandler := &v1.FetchByIPAddressHandler{
-		LogFn:                domain.LoggerFromContext,
-		PhysicalAssetFetcher: assetFetcher,
-	}
-	assetStorer := &assetstorer.PostgresPhysicalAssetStorer{DB: postgresdb}
-	syncHandler := &v1.SyncIPAMDataHandler{
-		IPAMDataFetcher:     ipamClient,
-		LogFn:               domain.LoggerFromContext,
-		PhysicalAssetStorer: assetStorer,
-	}
 	p, err := c.Producer.New(ctx, conf.Producer.Config)
 	if err != nil {
 		return nil, err
@@ -82,6 +69,38 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		Producer:              p,
 		LogFn:                 domain.LoggerFromContext,
 	}
+
+	pgdb, err := c.Postgres.New(ctx, conf.PostgresConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	dc, err := c.Device42.New(ctx, conf.Device42)
+	if err != nil {
+		return nil, err
+	}
+
+	deviceFetcher := ipamfetcher.NewDevice42DeviceFetcher(dc)
+	subnetFetcher :=  ipamfetcher.NewDevice42SubnetFetcher(dc)
+	customerFetcher := ipamfetcher.NewDevice42CustomerFetcher(dc)
+	ipamDataFetcher := &ipamfetcher.Client{
+		CustomerFetcher: customerFetcher,
+		DeviceFetcher:   deviceFetcher,
+		SubnetFetcher:   subnetFetcher,
+	}
+
+	assetFetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: pbdb}
+	fetchHandler := &v1.FetchByIPAddressHandler{
+		LogFn:                domain.LoggerFromContext,
+		PhysicalAssetFetcher: assetFetcher,
+	}
+	assetStorer := &assetstorer.PostgresPhysicalAssetStorer{DB: pgdb}
+	syncHandler := &v1.SyncIPAMDataHandler{
+		IPAMDataFetcher:     ipamDataFetcher,
+		LogFn:               domain.LoggerFromContext,
+		PhysicalAssetStorer: assetStorer,
+	}
+
 	handlers := map[string]serverfull.Function{
 		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
 		"sync":      serverfull.NewFunction(syncHandler.Handle),
@@ -96,62 +115,6 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	}
 	return func(ctx context.Context, source settings.Source) error {
 		return serverfull.StartHTTP(ctx, source, fetcher)
-	}, nil
-}
-
-func getIPAMClient(ctx context.Context, root settings.Source) (*ipamfetcher.Client, error) {
-	ipsPrefixedEnv := &settings.PrefixSource{
-		Source: root,
-		Prefix: []string{"IPS"},
-	}
-	subnetsPrefixedEnv := &settings.PrefixSource{
-		Source: root,
-		Prefix: []string{"SUBNETS"},
-	}
-	customersPrefixedEnv := &settings.PrefixSource{
-		Source: root,
-		Prefix: []string{"CUSTOMERS"},
-	}
-	device42IPsClientComponent := &ipamfetcher.Device42ClientComponent{}
-	device42IPsConfig := new(ipamfetcher.Device42ClientConfig)
-	if err := settings.NewComponent(ctx, ipsPrefixedEnv, device42IPsClientComponent, device42IPsConfig); err != nil {
-		return nil, err
-	}
-	devicesFetcher := &ipamfetcher.Device42DeviceFetcher{
-		Limit: device42IPsConfig.Limit,
-		PageFetcher: &ipamfetcher.Device42PageFetcher{
-			Client:   http.DefaultClient,
-			Endpoint: device42IPsConfig.Endpoint,
-		},
-	}
-
-	device42SubnetsClientComponent := &ipamfetcher.Device42ClientComponent{}
-	device42SubnetsConfig := new(ipamfetcher.Device42ClientConfig)
-	if err := settings.NewComponent(ctx, subnetsPrefixedEnv, device42SubnetsClientComponent, device42SubnetsConfig); err != nil {
-		return nil, err
-	}
-	subnetsFetcher := &ipamfetcher.Device42SubnetFetcher{
-		Limit: device42SubnetsConfig.Limit,
-		PageFetcher: &ipamfetcher.Device42PageFetcher{
-			Client:   http.DefaultClient,
-			Endpoint: device42SubnetsConfig.Endpoint,
-		},
-	}
-
-	device42CustomersClientComponent := &ipamfetcher.Device42ClientComponent{}
-	device42CustomersConfig := new(ipamfetcher.Device42ClientConfig)
-	if err := settings.NewComponent(ctx, customersPrefixedEnv, device42CustomersClientComponent, device42CustomersConfig); err != nil {
-		return nil, err
-	}
-	customerFetcher := &ipamfetcher.Device42CustomerFetcher{
-		Client:   http.DefaultClient,
-		Endpoint: device42CustomersConfig.Endpoint,
-	}
-
-	return &ipamfetcher.Client{
-		CustomerFetcher: customerFetcher,
-		DeviceFetcher:   devicesFetcher,
-		SubnetFetcher:   subnetsFetcher,
 	}, nil
 }
 

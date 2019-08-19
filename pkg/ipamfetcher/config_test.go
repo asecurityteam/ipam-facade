@@ -7,7 +7,7 @@ import (
 )
 
 func TestName(t *testing.T) {
-	d := &Device42ClientSettings{}
+	d := &Device42ClientConfig{}
 	assert.Equal(t, "Device42Client", d.Name())
 }
 

@@ -32,11 +32,8 @@ services:
       - IPAMFACADE_PRODUCER_POST_HTTPCLIENT_TYPE: "DEFAULT"
       - IPAMFACADE_PRODUCER_POST_HTTPCLIENT_DEFAULTCONFIG_CONTENTTYPE: "application/json"
       - IPAMFACADE_PRODUCER_POST_HTTPCLIENT_SMART_OPENAPI: ""
-      - IPS_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/ips
-      - IPS_DEVICE42PAGEFETCHER_LIMIT=500
-      - SUBNETS_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/subnets
-      - SUBNETS_DEVICE42PAGEFETCHER_LIMIT=500
-      - CUSTOMER_DEVICE42PAGEFETCHER_ENDPOINT=https://ipam-stg.net.atlassian.com/api/1.0/customers
+      - IPAMFACADE_DEVICE42CLIENT_ENDPOINT=https://ipam-stg.net.atlassian.com
+      - IPAMFACADE_DEVICE42CLIENT_LIMIT=500
   gateway-incoming:
     build:
       context: .
