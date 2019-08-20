@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"os"
 
 	producer "github.com/asecurityteam/component-producer"
@@ -45,17 +47,8 @@ func (c *component) Settings() *config {
 	return &config{
 		LambdaMode: false,
 		Producer:   &producerConfig{c.Producer.Settings()},
-		Postgres: &sqldb.PostgresConfig{
-			Hostname: c.Postgres.Settings().Hostname,
-			Port: c.Postgres.Settings().Port,
-			Username: c.Postgres.Settings().Username,
-			Password: c.Postgres.Settings().Password,
-			DatabaseName: c.Postgres.Settings().DatabaseName,
-		},
-		Device42: &ipamfetcher.Device42ClientConfig{
-			Endpoint: c.Device42.Settings().Endpoint,
-			Limit: c.Device42.Settings().Limit,
-		},
+		Postgres:   c.Postgres.Settings(),
+		Device42:   c.Device42.Settings(),
 	}
 }
 
@@ -134,6 +127,17 @@ func main() {
 	ctx := context.Background()
 	runner := new(func(context.Context, settings.Source) error)
 	cmp := newComponent()
+
+	// Print names and example values for all defined environment variables
+	// when -h or -help are passed as flags.
+	fs := flag.NewFlagSet("ipamfacade", flag.ContinueOnError)
+	fs.Usage = func() {}
+	if err = fs.Parse(os.Args[1:]); err == flag.ErrHelp {
+		g, _ := settings.GroupFromComponent(cmp)
+		fmt.Println("Usage: ")
+		fmt.Println(settings.ExampleEnvGroups([]settings.Group{g}))
+		return
+	}
 
 	err = settings.NewComponent(ctx, source, cmp, runner)
 	if err != nil {

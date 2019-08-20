@@ -42,7 +42,6 @@ type Device42CustomerFetcher struct {
 // FetchCustomers fetches customers from IPAM
 func (d *Device42CustomerFetcher) FetchCustomers(ctx context.Context) ([]domain.Customer, error) {
 	u, _ := url.Parse(d.Endpoint.String())
-	u.Path = path.Join(u.Path, "customers")
 	req, _ := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
 	res, err := d.Client.Do(req.WithContext(ctx))
 	if err != nil {
