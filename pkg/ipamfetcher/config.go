@@ -20,7 +20,7 @@ func (d *Device42ClientConfig) Name() string {
 	return "Device42Client"
 }
 
-// NewDevice42ClientComponent generates, a new, unititialized Device42ClientComponent
+// NewDevice42ClientComponent generates a new, unititialized Device42ClientComponent
 func NewDevice42ClientComponent() *Device42ClientComponent {
 	return &Device42ClientComponent{
 		HTTP: httpclient.NewComponent(),

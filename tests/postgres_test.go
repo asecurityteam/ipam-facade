@@ -12,14 +12,15 @@ import (
 	"strings"
 	"testing"
 
+	packr "github.com/gobuffalo/packr/v2"
+	pq "github.com/lib/pq"
+	"github.com/stretchr/testify/require"
+
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	"github.com/asecurityteam/ipam-facade/pkg/sqldb"
 	"github.com/asecurityteam/settings"
-	packr "github.com/gobuffalo/packr/v2"
-	pq "github.com/lib/pq"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -48,9 +49,9 @@ func TestNoDBRows(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	// code should tolerate no data in the tables
@@ -90,9 +91,9 @@ func TestSubnetOnly(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
@@ -162,9 +163,9 @@ func TestDeviceAndSubnet(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
@@ -235,9 +236,9 @@ func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
@@ -301,9 +302,9 @@ func TestOverlappingSubnet(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
@@ -376,9 +377,9 @@ func TestOverlappingSubnetWithDevice(t *testing.T) {
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
 
-	postgresConfigComponent := &sqldb.PostgresConfigComponent{}
+	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
-	require.Nil(t, settings.NewComponent(ctx, source, postgresConfigComponent, db))
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
 	defer db.Conn().Close()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
