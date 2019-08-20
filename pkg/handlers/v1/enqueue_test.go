@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,11 +14,11 @@ func TestEnqueue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	uuid := "f613056d-9b3e-4d69-888f-9f56c1ee8093"
+	jobID := "f613056d-9b3e-4d69-888f-9f56c1ee8093"
 	mockRandomNumberGenerator := NewMockRandomNumberGenerator(ctrl)
-	mockRandomNumberGenerator.EXPECT().NewRandom().Return(uuid, nil)
+	mockRandomNumberGenerator.EXPECT().NewRandom().Return(uuid.MustParse(jobID), nil)
 	mockProducer := NewMockProducer(ctrl)
-	mockProducer.EXPECT().Produce(gomock.Any(), jobMetadata).Return(nil, nil)
+	mockProducer.EXPECT().Produce(gomock.Any(), JobMetadata{JobID: jobID}).Return(JobMetadata{JobID: jobID}, nil)
 
 	h := &EnqueueHandler{
 		RandomNumberGenerator: mockRandomNumberGenerator,
@@ -25,7 +26,7 @@ func TestEnqueue(t *testing.T) {
 		LogFn:                 testLogFn,
 	}
 	resp, err := h.Handle(context.Background())
-	assert.Equal(t, &JobMetadata{JobID: uuid}, resp)
+	assert.Equal(t, JobMetadata{JobID: jobID}, resp)
 	assert.Nil(t, err)
 }
 
@@ -33,11 +34,11 @@ func TestEnqueueProducerError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	uuid := "f613056d-9b3e-4d69-888f-9f56c1ee8093"
+	jobID := "f613056d-9b3e-4d69-888f-9f56c1ee8093"
 	mockRandomNumberGenerator := NewMockRandomNumberGenerator(ctrl)
-	mockRandomNumberGenerator.EXPECT().NewRandom().Return(uuid, nil)
+	mockRandomNumberGenerator.EXPECT().NewRandom().Return(uuid.MustParse(jobID), nil)
 	mockProducer := NewMockProducer(ctrl)
-	mockProducer.EXPECT().Produce(gomock.Any(), &JobMetadata{JobID: uuid}).Return(nil, errors.New(""))
+	mockProducer.EXPECT().Produce(gomock.Any(), JobMetadata{JobID: jobID}).Return(uuid.New(), errors.New(""))
 
 	h := &EnqueueHandler{
 		RandomNumberGenerator: mockRandomNumberGenerator,
@@ -53,7 +54,7 @@ func TestEnqueueUUIDGenerationError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRandomNumberGenerator := NewMockRandomNumberGenerator(ctrl)
-	mockRandomNumberGenerator.EXPECT().NewRandom().Return(nil, errors.New(""))
+	mockRandomNumberGenerator.EXPECT().NewRandom().Return(uuid.New(), errors.New(""))
 	mockProducer := NewMockProducer(ctrl)
 
 	h := &EnqueueHandler{
