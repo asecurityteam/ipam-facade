@@ -26,7 +26,7 @@ type ip struct {
 // NewDevice42DeviceFetcher generates a new Device42DeviceFetcher
 func NewDevice42DeviceFetcher(dc *Device42Client) *Device42DeviceFetcher {
 	resourceEndpoint, _ := url.Parse(dc.Endpoint.String())
-	resourceEndpoint.Path = path.Join(resourceEndpoint.Path, "api", "1.0", "devices")
+	resourceEndpoint.Path = path.Join(resourceEndpoint.Path, "api", "1.0", "ips")
 	return &Device42DeviceFetcher{
 		PageFetcher: &Device42PageFetcher{
 			Client:   dc.Client,
