@@ -5,10 +5,25 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
+
+func TestNewDevice42SubnetFetcher(t *testing.T) {
+	component := NewDevice42ClientComponent()
+	config := &Device42ClientConfig{
+		Endpoint: "https://localhost:443",
+		Limit:    50,
+		HTTP:     component.HTTP.Settings(),
+	}
+	client, _ := component.New(context.Background(), config)
+	fetcher := NewDevice42SubnetFetcher(client)
+	pageFetcher, _ := fetcher.PageFetcher.(*Device42PageFetcher)
+	assert.Equal(t, "https://localhost:443/api/1.0/subnets", pageFetcher.Endpoint.String())
+	assert.Equal(t, 50, fetcher.Limit)
+}
 
 func TestFetchSubnets(t *testing.T) {
 	ctrl := gomock.NewController(t)

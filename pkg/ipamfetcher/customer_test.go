@@ -9,9 +9,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/asecurityteam/ipam-facade/pkg/domain"
 )
 
 type errReader struct {
@@ -20,6 +21,18 @@ type errReader struct {
 
 func (r *errReader) Read(_ []byte) (int, error) {
 	return 0, r.Error
+}
+
+func TestNewDevice42CustomerFetcher(t *testing.T) {
+	component := NewDevice42ClientComponent()
+	config := &Device42ClientConfig{
+		Endpoint: "https://localhost:443",
+		Limit:    50,
+		HTTP:     component.HTTP.Settings(),
+	}
+	client, _ := component.New(context.Background(), config)
+	fetcher := NewDevice42CustomerFetcher(client)
+	assert.Equal(t, "https://localhost:443/api/1.0/customers", fetcher.Endpoint.String())
 }
 
 func TestFetchCustomers(t *testing.T) {
