@@ -22,10 +22,24 @@ type AssetFetcherFailure struct {
 type IPAMDataFetcherFailure struct {
 	Message string `logevent:"message,default=ipam-data-fetcher-failure"`
 	Reason  string `logevent:"reason"`
+	JobID   string `logevent:"jobId"`
 }
 
 // AssetStorerFailure is logged when storing IPAM data fails.
 type AssetStorerFailure struct {
 	Message string `logevent:"message,default=ipam-data-storer-failure"`
+	Reason  string `logevent:"reason"`
+	JobID   string `logevent:"jobId"`
+}
+
+// SyncError is emitted if the IPAM data sync fails
+type SyncError struct {
+	Message string `logevent:"message,default=sync-error"`
+	Reason  string `logevent:"reason"`
+}
+
+// ProducerError is emitted when producer fails to enqueue
+type ProducerError struct {
+	Message string `logevent:"message,default=producer-error"`
 	Reason  string `logevent:"reason"`
 }

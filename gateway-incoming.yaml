@@ -1,15 +1,16 @@
 openapi: 3.0.0
 x-runtime:
   httpserver:
-    address: ":8080"
+    address: ":${PORTS_GATEWAY_INCOMING}"
   logger:
-    level: "INFO"
-    output: "STDOUT"
+    level: "${SERVERFULL_RUNTIME_LOGGER_LEVEL}"
+    output: "${SERVERFULL_RUNTIME_LOGGER_OUTPUT}"
   stats:
-    output: "DATADOG"
+    output: "${SERVERFULL_RUNTIME_STATS_OUTPUT}"
     datadog:
-      address: "statsd:8125"
+      address: "${SERVERFULL_RUNTIME_STATS_DATADOG_ADDRESS}"
       flushinterval: "10s"
+      tags: "${SERVERFULL_RUNTIME_STATS_DATADOG_TAGS}"
   signals:
     installed:
       - "OS"
@@ -109,7 +110,14 @@ paths:
             }
   /sync:
     post:
-      description: "Sync the data from Device42 into the IPAM Facade database"
+      description: "Synchronize the IPAM data from Device42 with the IPAM Facade database"
+      requestBody:
+        description: Optional Job Metadata used when the data sync request was triggered as an asynchronous job.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobMetadata'
       responses:
         204:
           description: "Success."
@@ -136,7 +144,7 @@ paths:
         lambda:
           arn: "sync"
           async: false
-          request: '{}'
+          request: '#! json .Request.Body !#'
           success: '{"status": 204, "bodyPassthrough": true}'
           error: >
             {
@@ -146,6 +154,36 @@ paths:
               #! end !#
               "bodyPassthrough": true
             }
+  /trigger-sync:
+    post:
+      description: "Trigger an asynchronous job to synchronize the IPAM data from Device42 with the IPAM Facade database"
+      responses:
+        202:
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobMetadata"
+        500:
+          description: "Triggger failed. Sync operation will not be performed."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "enqueue"
+          async: false
+          request: '{}'
+          success: '{"status": 202, "bodyPassthrough": true}'
+          error: '{"status": 500, "bodyPassthrough": true}'
 components:
   schemas:
     PhysicalAsset:
@@ -181,6 +219,12 @@ components:
             customerID:
               type: string
               description: ID of the customer associated with the subnet containing the IP address.
+    JobMetadata:
+      type: object
+      properties:
+        jobId:
+          type: string
+          description: ID for the asychronous job. Can be checked for successful operation of the task later in the service logs.
     Error:
       type: object
       properties:

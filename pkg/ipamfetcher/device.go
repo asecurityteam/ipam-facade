@@ -3,6 +3,8 @@ package ipamfetcher
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"path"
 	"strconv"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
@@ -19,6 +21,19 @@ type ip struct {
 	DeviceID int    `json:"device_id"`
 	IP       string `json:"ip"`
 	SubnetID int    `json:"subnet_id"`
+}
+
+// NewDevice42DeviceFetcher generates a new Device42DeviceFetcher
+func NewDevice42DeviceFetcher(dc *Device42Client) *Device42DeviceFetcher {
+	resourceEndpoint, _ := url.Parse(dc.Endpoint.String())
+	resourceEndpoint.Path = path.Join(resourceEndpoint.Path, "api", "1.0", "ips")
+	return &Device42DeviceFetcher{
+		PageFetcher: &Device42PageFetcher{
+			Client:   dc.Client,
+			Endpoint: resourceEndpoint,
+		},
+		Limit: dc.Limit,
+	}
 }
 
 // Device42DeviceFetcher implements the DeviceFetcher interface to retrieve device information

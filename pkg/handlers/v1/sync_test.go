@@ -51,7 +51,7 @@ func TestSyncHandlerSuccess(t *testing.T) {
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(ipamData, nil)
 	mockAssetStorer.EXPECT().StorePhysicalAssets(gomock.Any(), ipamData).Return(nil)
-	err := handler.Handle(context.Background())
+	err := handler.Handle(context.Background(), JobMetadata{JobID: "foo-bar-baz-quux"})
 	require.Equal(t, nil, err)
 }
 
@@ -68,7 +68,7 @@ func TestSyncHandlerIPAMDataFetchFailure(t *testing.T) {
 	}
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(domain.IPAMData{}, errors.New("boom"))
-	err := handler.Handle(context.Background())
+	err := handler.Handle(context.Background(), JobMetadata{JobID: "foo-bar-baz-quux"})
 	require.Equal(t, errors.New("boom"), err)
 }
 
@@ -112,6 +112,6 @@ func TestSyncHandlerIPAMDataStorerFailure(t *testing.T) {
 
 	mockIPAMDataFetcher.EXPECT().FetchIPAMData(gomock.Any()).Return(ipamData, nil)
 	mockAssetStorer.EXPECT().StorePhysicalAssets(gomock.Any(), ipamData).Return(errors.New("boom"))
-	err := handler.Handle(context.Background())
+	err := handler.Handle(context.Background(), JobMetadata{JobID: "foo-bar-baz-quux"})
 	require.Equal(t, errors.New("boom"), err)
 }

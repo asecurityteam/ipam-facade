@@ -19,8 +19,8 @@ func TestName(t *testing.T) {
 }
 
 func TestShouldReturnSame(t *testing.T) {
-	postgresConfigComponent := PostgresConfigComponent{}
-	postgresConfig := postgresConfigComponent.Settings()
+	postgresComponent := NewPostgresComponent()
+	postgresConfig := postgresComponent.Settings()
 	assert.NotNil(t, postgresConfig)
 	assert.Empty(t, postgresConfig.DatabaseName)
 }
@@ -28,7 +28,7 @@ func TestShouldReturnSame(t *testing.T) {
 func TestShouldFailToMakeNewDB(t *testing.T) {
 	postgresConfig := PostgresConfig{}
 
-	postgresConfigComponent := PostgresConfigComponent{}
-	_, err := postgresConfigComponent.New(context.Background(), &postgresConfig)
+	postgresComponent := NewPostgresComponent()
+	_, err := postgresComponent.New(context.Background(), &postgresConfig)
 	assert.NotNil(t, err)
 }

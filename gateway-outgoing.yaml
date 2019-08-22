@@ -1,0 +1,316 @@
+openapi: 3.0.0
+x-runtime:
+  httpserver:
+    address: ":${PORTS_GATEWAY_OUTGOING}"
+  logger:
+    level: "${SERVERFULL_RUNTIME_LOGGER_LEVEL}"
+    output: "${SERVERFULL_RUNTIME_LOGGER_OUTPUT}"
+  stats:
+    output: "${SERVERFULL_RUNTIME_STATS_OUTPUT}"
+    datadog:
+      address: "${SERVERFULL_RUNTIME_STATS_DATADOG_ADDRESS}"
+      flushinterval: "10s"
+      tags: "${SERVERFULL_RUNTIME_STATS_DATADOG_TAGS}"
+  signals:
+    installed:
+      - "OS"
+    os:
+      signals:
+        - 2 # SIGINT
+        - 15 # SIGTERM
+  connstate:
+    reportinterval: "5s"
+    hijackedcounter: "http.server.connstate.hijacked"
+    closedcounter: "http.server.connstate.closed"
+    idlegauge: "http.server.connstate.idle.gauge"
+    idlecounter: "http.server.connstate.idle"
+    activegauge: "http.server.connstate.active.gauge"
+    activecounter: "http.server.connstate.active"
+    newgauge: "http.server.connstate.new.gauge"
+    newcounter: "http.server.connstate.new"
+x-transportd:
+  backends:
+    - ipam
+  ipam:
+    host: "${IPAM_API_HOST}"
+    pool:
+      ttl: "15m"
+      count: 3
+info:
+  version: 1.0.0
+  title: "ipam-facade"
+  description: "A facade for the IPAM functionality in the Device42 CMDB"
+  contact:
+    name: Security Development
+    email: secdev-external@atlassian.com
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+paths:
+  /api/1.0/ips:
+    get:
+      description: IPAM API for retrieving paged IPs.
+      parameters:
+        - name: limit
+          in: query
+          description: The number of records per page to retrieve.
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The offset of the IP to start at.
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPsResponse'
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+      x-transportd:
+        backend: ipam
+        enabled:
+          - "accesslog"
+          - "metrics"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "timeout"
+          - "retry"
+          - "basicauth"
+        timeout:
+          after: "${IPAM_TIMEOUT}"
+        retry:
+          backoff: "50ms"
+          limit: 3
+          codes:
+            - 500
+            - 501
+            - 502
+            - 503
+            - 504
+            - 505
+            - 506
+            - 507
+            - 508
+            - 509
+            - 510
+            - 511
+        basicauth:
+          username: "${IPAM_USERNAME}"
+          password: "${IPAM_PASSWORD}"
+  /api/1.0/customers:
+    get:
+      description: IPAM API for retrieving paged customers.
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomersResponse'
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+      x-transportd:
+        backend: ipam
+        enabled:
+          - "accesslog"
+          - "metrics"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "timeout"
+          - "retry"
+          - "basicauth"
+        timeout:
+          after: "${IPAM_TIMEOUT}"
+        retry:
+          backoff: "50ms"
+          limit: 3
+          codes:
+            - 500
+            - 501
+            - 502
+            - 503
+            - 504
+            - 505
+            - 506
+            - 507
+            - 508
+            - 509
+            - 510
+            - 511
+        basicauth:
+          username: "${IPAM_USERNAME}"
+          password: "${IPAM_PASSWORD}"
+  /api/1.0/subnets:
+    get:
+      description: IPAM API for retrieving paged subnets.
+      parameters:
+        - name: limit
+          in: query
+          description: The number of records per page to retrieve.
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The offset of the subnet to start at.
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubnetsResponse'
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+      x-transportd:
+        backend: ipam
+        enabled:
+          - "accesslog"
+          - "metrics"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "timeout"
+          - "retry"
+          - "basicauth"
+        timeout:
+          after: "${IPAM_TIMEOUT}"
+        retry:
+          backoff: "50ms"
+          limit: 3
+          codes:
+            - 500
+            - 501
+            - 502
+            - 503
+            - 504
+            - 505
+            - 506
+            - 507
+            - 508
+            - 509
+            - 510
+            - 511
+        basicauth:
+          username: "${IPAM_USERNAME}"
+          password: "${IPAM_PASSWORD}"
+components:
+  schemas:
+    IPsResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: offset used
+        limit:
+          type: integer
+          description: limit used
+        total_count:
+          type: integer
+          description: count of IPs returned
+        ips:
+          type: array
+          description: List of IPs.
+          items:
+            $ref: '#/components/schemas/IP'
+    IP:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          nullable: true
+          description: device identifier
+        ip:
+          type: string
+          description: IP address
+        subnet_id:
+          type: integer
+          description: subnet identifier
+    SubnetsResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: offset used
+        limit:
+          type: integer
+          description: limit used
+        total_count:
+          type: integer
+          description: count of subnets returned
+        subnets:
+          type: array
+          description: List of subnets.
+          items:
+            $ref: '#/components/schemas/Subnet'
+    Subnet:
+      type: object
+      properties:
+        custom_fields:
+          type: array
+          description: list of custom fields
+          items:
+            $ref: '#/components/schemas/CustomField'
+        customer_id:
+          type: integer
+          nullable: true
+          description: customer identifier
+        mask_bits:
+          type: integer
+          description: subnet mask bits
+        network:
+          type: string
+          description: subnet network
+        subnet_id:
+          type: integer
+          description: subnet identifier
+    CustomersResponse:
+      type: object
+      properties:
+        Customers:
+          type: array
+          description: List of customers.
+          items:
+            $ref: '#/components/schemas/Customer'
+    Customer:
+      type: object
+      properties:
+        custom_fields:
+          type: array
+          description: list of custom fields
+          items:
+            $ref: '#/components/schemas/CustomField'
+        contact_info:
+          type: string
+          description: contact information
+        id:
+          type: integer
+          description: customer identifier
+    CustomField:
+      type: object
+      properties:
+        key:
+          type: string
+          description: field key name
+        value:
+          type: string
+          nullable: true
+          description: field value
+        notes:
+          type: string
+          nullable: true
+          description: notes
