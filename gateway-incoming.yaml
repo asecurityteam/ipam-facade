@@ -144,7 +144,7 @@ paths:
         lambda:
           arn: "sync"
           async: false
-          request: '{}'
+          request: '#! json .Request.Body !#'
           success: '{"status": 204, "bodyPassthrough": true}'
           error: >
             {
