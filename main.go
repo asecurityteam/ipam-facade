@@ -18,17 +18,9 @@ import (
 	"github.com/asecurityteam/settings"
 )
 
-type producerConfig struct {
-	*producer.Config
-}
-
-func (*producerConfig) Name() string {
-	return "producer"
-}
-
 type config struct {
 	LambdaMode bool `description:"Use the Lambda SDK to start the system."`
-	Producer   *producerConfig
+	Producer   *producer.Config
 	Postgres   *sqldb.PostgresConfig
 	Device42   *ipamfetcher.Device42ClientConfig
 }
@@ -46,7 +38,7 @@ type component struct {
 func (c *component) Settings() *config {
 	return &config{
 		LambdaMode: false,
-		Producer:   &producerConfig{c.Producer.Settings()},
+		Producer:   c.Producer.Settings(),
 		Postgres:   c.Postgres.Settings(),
 		Device42:   c.Device42.Settings(),
 	}
@@ -61,7 +53,7 @@ func newComponent() *component {
 }
 
 func (c *component) New(ctx context.Context, conf *config) (func(context.Context, settings.Source) error, error) {
-	p, err := c.Producer.New(ctx, conf.Producer.Config)
+	p, err := c.Producer.New(ctx, conf.Producer)
 	if err != nil {
 		return nil, err
 	}
