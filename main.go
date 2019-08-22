@@ -12,8 +12,8 @@ import (
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
-	"github.com/asecurityteam/ipam-facade/pkg/randomnumbergenerator"
 	"github.com/asecurityteam/ipam-facade/pkg/sqldb"
+	"github.com/asecurityteam/ipam-facade/pkg/uuidgenerator"
 	"github.com/asecurityteam/serverfull"
 	"github.com/asecurityteam/settings"
 )
@@ -58,9 +58,9 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		return nil, err
 	}
 	enqueueHandler := &v1.EnqueueHandler{
-		RandomNumberGenerator: &randomnumbergenerator.UUIDGenerator{},
-		Producer:              p,
-		LogFn:                 domain.LoggerFromContext,
+		UUIDGenerator: &uuidgenerator.RandomUUIDGenerator{},
+		Producer:      p,
+		LogFn:         domain.LoggerFromContext,
 	}
 
 	pgdb, err := c.Postgres.New(ctx, conf.Postgres)

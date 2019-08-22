@@ -1,4 +1,4 @@
-package randomnumbergenerator
+package uuidgenerator
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestUUIDGeneration(t *testing.T) {
-	generator := UUIDGenerator{}
-	_, err := generator.NewRandom()
+	generator := RandomUUIDGenerator{}
+	_, err := generator.NewUUIDString()
 	assert.NoError(t, err)
 }
