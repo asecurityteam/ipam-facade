@@ -19,10 +19,11 @@ import (
 )
 
 type config struct {
-	LambdaMode bool `description:"Use the Lambda SDK to start the system."`
-	Producer   *producer.Config
-	Postgres   *sqldb.PostgresConfig
-	Device42   *ipamfetcher.Device42ClientConfig
+	LambdaMode     bool   `description:"Use the Lambda SDK to start the system."`
+	LambdaFunction string `description:"the lambda function that should be called when running in LAMBDAMODE=true"`
+	Producer       *producer.Config
+	Postgres       *sqldb.PostgresConfig
+	Device42       *ipamfetcher.Device42ClientConfig
 }
 
 func (*config) Name() string {
@@ -103,7 +104,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
 	if conf.LambdaMode {
 		return func(ctx context.Context, source settings.Source) error {
-			return serverfull.StartLambda(ctx, source, fetcher, "filter")
+			return serverfull.StartLambda(ctx, source, fetcher, conf.LambdaFunction)
 		}, nil
 	}
 	return func(ctx context.Context, source settings.Source) error {

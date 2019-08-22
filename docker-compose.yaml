@@ -26,6 +26,7 @@ services:
       SERVERFULL_RUNTIME_CONNSTATE_NEWGAUGE: http.server.connstate.new.gauge
       SERVERFULL_RUNTIME_CONNSTATE_NEWCOUNTER: http.server.connstate.new
       IPAMFACADE_LAMBDAMODE: "false"
+      IPAMFACADE_LAMBDAFUNCTION: "enqueue"
       IPAMFACADE_PRODUCER_TYPE: "POST"
       IPAMFACADE_PRODUCER_BENTHOS_YAML: ""
       IPAMFACADE_PRODUCER_POST_ENDPOINT: "http://benthos-output:8086/publish"
