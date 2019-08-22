@@ -222,7 +222,7 @@ components:
     JobMetadata:
       type: object
       properties:
-        jobID:
+        jobId:
           type: string
           description: ID for the asychronous job. Can be checked for successful operation of the task later in the service logs.
     Error:
