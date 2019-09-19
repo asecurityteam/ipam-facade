@@ -17,9 +17,36 @@ type PhysicalAsset struct {
 	CustomerID    int64
 }
 
+// AssetSubnet represents a network subnet to which assets are allocated
+type AssetSubnet struct {
+	Network       string
+	ResourceOwner string
+	BusinessUnit  string
+	Location      string
+}
+
+// AssetIP represents IP address info for an asset
+type AssetIP struct {
+	IP            string
+	Network       string
+	ResourceOwner string
+	BusinessUnit  string
+	Location      string
+}
+
 // PhysicalAssetFetcher retrieves a PhysicalAsset by its IP Address.
 type PhysicalAssetFetcher interface {
 	FetchPhysicalAsset(ctx context.Context, ipAddress string) (PhysicalAsset, error)
+}
+
+// SubnetsFetcher fetches a pages response for network subnets
+type SubnetsFetcher interface {
+	FetchSubnets(ctx context.Context, limit, offset int) ([]AssetSubnet, error)
+}
+
+// IPsFetcher fetches a pages response for ip addresses
+type IPsFetcher interface {
+	FetchIPs(ctx context.Context, limit, offset int) ([]AssetIP, error)
 }
 
 // InvalidInput occurs when a physical asset is requested by an invalid IP address.
