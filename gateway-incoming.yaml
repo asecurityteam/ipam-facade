@@ -108,6 +108,194 @@ paths:
               #! end !#
               "bodyPassthrough": true
             }
+  /v1/physical/ip:
+    get:
+      summary: "Retrieve a paged response for IP addresses"
+      parameters:
+        - name: "limit"
+          in: "query"
+          description: "The limit for each page size"
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Customer, Subnet, and Device information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedIPResponse"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "fetchIPs"
+          async: false
+          request: '{"limit": #!index .Request.Query.limit[0]!#}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "InvalidInput" !# 400,
+              #! else !#
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
+              #! else !# 500,
+              #! end !#
+              #! end !#
+              "bodyPassthrough": true
+            }
+  /v1/physical/ip/page/{pageToken}:
+    get:
+      summary: "Retrieve a paged response for IP addresses"
+      parameters:
+        - name: "pageToken"
+          in: "path"
+          description: "The token indicating the next page in the sequence"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Customer, Subnet, and Device information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedIPResponse"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "fetchNextIPs"
+          async: false
+          request: '{"nextPageToken": #!.Request.Path.pageToken!#}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "InvalidInput" !# 400,
+              #! else !#
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
+              #! else !# 500,
+              #! end !#
+              #! end !#
+              "bodyPassthrough": true
+            }
+  /v1/physical/subnet:
+    get:
+      summary: "Retrieve a paged response for subnets"
+      parameters:
+        - name: "limit"
+          in: "query"
+          description: "The limit for each page size"
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Customer and Subnet information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedSubnetResponse"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "fetchSubnets"
+          async: false
+          request: '{"limit": #!index .Request.Query.limit[0]!#}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "InvalidInput" !# 400,
+              #! else !#
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
+              #! else !# 500,
+              #! end !#
+              #! end !#
+              "bodyPassthrough": true
+            }
+  /v1/physical/subnet/page/{pageToken}:
+    get:
+      summary: "Retrieve a paged response for Subnets"
+      parameters:
+        - name: "pageToken"
+          in: "path"
+          description: "The token indicating the next page in the sequence"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "Customer and Subnet information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedSubnetResponse"
+        400:
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-transportd:
+        backend: app
+        enabled:
+          - "metrics"
+          - "accesslog"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "lambda"
+        lambda:
+          arn: "fetchNextSubnets"
+          async: false
+          request: '{"nextPageToken": #!.Request.Path.pageToken!#}'
+          success: '{"status": 200, "bodyPassthrough": true}'
+          error: >
+            {
+              "status":
+              #! if eq .Response.Body.errorType "InvalidInput" !# 400,
+              #! else !#
+              #! if eq .Response.Body.errorType "AssetNotFound" !# 404,
+              #! else !# 500,
+              #! end !#
+              #! end !#
+              "bodyPassthrough": true
+            }
   /sync:
     post:
       description: "Synchronize the IPAM data from Device42 with the IPAM Facade database"
@@ -219,6 +407,42 @@ components:
             customerID:
               type: string
               description: ID of the customer associated with the subnet containing the IP address.
+    PagedIPResponse:
+      type: object
+      properties:
+        nextPageToken:
+          type: string
+          description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
+        results:
+          type: object
+          properties:
+            ip:
+              type: string
+            network:
+              type: string
+            resourceOwner:
+              type: string
+            businessUnit:
+              type: string
+            location:
+              type: string
+    PagedSubnetResponse:
+      type: object
+      properties:
+        nextPageToken:
+          type: string
+          description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
+        results:
+          type: object
+          properties:
+            network:
+              type: string
+            resourceOwner:
+              type: string
+            businessUnit:
+              type: string
+            location:
+              type: string
     JobMetadata:
       type: object
       properties:

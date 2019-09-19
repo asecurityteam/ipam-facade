@@ -49,13 +49,20 @@ type IPsFetcher interface {
 	FetchIPs(ctx context.Context, limit, offset int) ([]AssetIP, error)
 }
 
-// InvalidInput occurs when a physical asset is requested by an invalid IP address.
+// Fetcher is an interface for fetching various data IPAM sets
+type Fetcher interface {
+	PhysicalAssetFetcher
+	SubnetsFetcher
+	IPsFetcher
+}
+
+// InvalidInput occurs when request input is invalid
 type InvalidInput struct {
-	IP string
+	Input string
 }
 
 func (e InvalidInput) Error() string {
-	return fmt.Sprintf("%v is not a valid IP address", e.IP)
+	return fmt.Sprintf("%s is not a valid", e.Input)
 }
 
 // AssetNotFound is used to indicate that no physical asset with the given IP address exists in storage.
