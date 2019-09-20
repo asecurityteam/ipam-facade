@@ -33,11 +33,18 @@ services:
       IPAMFACADE_PRODUCER_POST_HTTPCLIENT_TYPE: "DEFAULT"
       IPAMFACADE_PRODUCER_POST_HTTPCLIENT_DEFAULTCONFIG_CONTENTTYPE: "application/json"
       IPAMFACADE_PRODUCER_POST_HTTPCLIENT_SMART_OPENAPI: ""
-      IPAMFACADE_DEVICE42CLIENT_ENDPOINT: "https://ipam-stg.net.atlassian.com"
+      IPAMFACADE_DEVICE42CLIENT_ENDPOINT: "http://gateway-outgoing:8082"
       IPAMFACADE_DEVICE42CLIENT_LIMIT: 500
       IPAMFACADE_DEVICE42CLIENT_HTTP_HTTPCLIENT_TYPE: "DEFAULT"
       IPAMFACADE_DEVICE42CLIENT_HTTP_HTTPCLIENT_DEFAULTCONFIG_CONTENTTYPE: "application/json"
       IPAMFACADE_DEVICE42CLIENT_HTTP_HTTPCLIENT_SMART_OPENAPI: ""
+      IPAMFACADE_POSTGRES_PASSWORD: "password"
+      IPAMFACADE_POSTGRES_USERNAME: "user"
+      IPAMFACADE_POSTGRES_DATABASENAME: "ipamfacade"
+      IPAMFACADE_POSTGRES_HOSTNAME: "postgres"
+      IPAMFACADE_POSTGRES_PORT: "5432"
+    depends_on:
+      - postgres
   gateway-incoming:
     build:
       context: .
@@ -60,3 +67,11 @@ services:
       IPAM_TIMEOUT: "30s"
     ports:
       - "8082:8082"
+  postgres:
+    image: postgres:11.2
+    environment:
+      # while env var names are quite similar to `app` service above, it's just a coincidence
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "user"
+      POSTGRES_DB: "ipamfacade"
+      PGDATA: "/var/lib/postgresql/data/pgdata11"
