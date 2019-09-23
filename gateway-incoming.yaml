@@ -155,7 +155,7 @@ paths:
               #! end !#
               "bodyPassthrough": true
             }
-  /v1/physical/ip/page/{pageToken}:
+  /v1/physical/ip/bulk/{pageToken}:
     get:
       summary: "Retrieve a paged response for IP addresses"
       parameters:
@@ -249,7 +249,7 @@ paths:
               #! end !#
               "bodyPassthrough": true
             }
-  /v1/physical/subnet/page/{pageToken}:
+  /v1/physical/subnet/bulk/{pageToken}:
     get:
       summary: "Retrieve a paged response for Subnets"
       parameters:
@@ -433,16 +433,18 @@ components:
           type: string
           description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
         results:
-          type: object
-          properties:
-            network:
-              type: string
-            resourceOwner:
-              type: string
-            businessUnit:
-              type: string
-            location:
-              type: string
+          type: array
+          items:
+            type: object
+            properties:
+              network:
+                type: string
+              resourceOwner:
+                type: string
+              businessUnit:
+                type: string
+              location:
+                type: string
     JobMetadata:
       type: object
       properties:
