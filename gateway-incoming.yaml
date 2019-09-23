@@ -414,18 +414,20 @@ components:
           type: string
           description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
         results:
-          type: object
-          properties:
-            ip:
-              type: string
-            network:
-              type: string
-            resourceOwner:
-              type: string
-            businessUnit:
-              type: string
-            location:
-              type: string
+          type: array
+          items:
+            type: object
+            properties:
+              ip:
+                type: string
+              network:
+                type: string
+              resourceOwner:
+                type: string
+              businessUnit:
+                type: string
+              location:
+                type: string
     PagedSubnetResponse:
       type: object
       properties:
