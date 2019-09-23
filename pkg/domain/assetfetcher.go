@@ -17,18 +17,52 @@ type PhysicalAsset struct {
 	CustomerID    int64
 }
 
+// AssetSubnet represents a network subnet to which assets are allocated
+type AssetSubnet struct {
+	Network       string
+	ResourceOwner string
+	BusinessUnit  string
+	Location      string
+}
+
+// AssetIP represents IP address info for an asset
+type AssetIP struct {
+	IP            string
+	Network       string
+	ResourceOwner string
+	BusinessUnit  string
+	Location      string
+}
+
 // PhysicalAssetFetcher retrieves a PhysicalAsset by its IP Address.
 type PhysicalAssetFetcher interface {
 	FetchPhysicalAsset(ctx context.Context, ipAddress string) (PhysicalAsset, error)
 }
 
-// InvalidInput occurs when a physical asset is requested by an invalid IP address.
+// SubnetsFetcher fetches a pages response for network subnets
+type SubnetsFetcher interface {
+	FetchSubnets(ctx context.Context, limit, offset int) ([]AssetSubnet, error)
+}
+
+// IPsFetcher fetches a pages response for ip addresses
+type IPsFetcher interface {
+	FetchIPs(ctx context.Context, limit, offset int) ([]AssetIP, error)
+}
+
+// Fetcher is an interface for fetching various data IPAM sets
+type Fetcher interface {
+	PhysicalAssetFetcher
+	SubnetsFetcher
+	IPsFetcher
+}
+
+// InvalidInput occurs when request input is invalid
 type InvalidInput struct {
-	IP string
+	Input string
 }
 
 func (e InvalidInput) Error() string {
-	return fmt.Sprintf("%v is not a valid IP address", e.IP)
+	return fmt.Sprintf("%s is not a valid", e.Input)
 }
 
 // AssetNotFound is used to indicate that no physical asset with the given IP address exists in storage.

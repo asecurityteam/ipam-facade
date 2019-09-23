@@ -43,8 +43,6 @@ func TestMain(m *testing.M) {
 
 // TestNoDBRows verifies that sql.ErrNoRows is returned when no devices or subnets exist
 func TestNoDBRows(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 	source, err := settings.NewEnvSource(os.Environ())
 	require.Nil(t, err)
@@ -63,8 +61,6 @@ func TestNoDBRows(t *testing.T) {
 // TestSubnetOnly verifies that an IP address within a subnet will return a match, even when
 // no corresponding device exists
 func TestSubnetOnly(t *testing.T) {
-	t.Parallel()
-
 	customerID := rand.Int31()
 	subnetID := rand.Int31()
 
@@ -121,8 +117,6 @@ func TestSubnetOnly(t *testing.T) {
 // TestDeviceAndSubnet verifies that a query for an IP address with a device match
 // returns both device and subnet information
 func TestDeviceAndSubnet(t *testing.T) {
-	t.Parallel()
-
 	customerID1 := rand.Int31()
 	customerID2 := rand.Int31()
 	subnetID := rand.Int31()
@@ -195,8 +189,6 @@ func TestDeviceAndSubnet(t *testing.T) {
 func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
 	// I don't know if IPAM would ever return device info where the
 	// device lacks an ID, but we're gonna handle it if it does...
-	t.Parallel()
-
 	customerID1 := rand.Int31()
 	customerID2 := rand.Int31()
 	subnetID := rand.Int31()
@@ -266,8 +258,6 @@ func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
 // TestOverlappingSubnet verifies that a query for an IP address will return the
 // most specific subnet that matches, as measured by the subnet's netmask length
 func TestOverlappingSubnet(t *testing.T) {
-	t.Parallel()
-
 	customerID := rand.Int31()
 	subnetID1 := rand.Int31()
 	subnetID2 := rand.Int31()
@@ -333,8 +323,6 @@ func TestOverlappingSubnet(t *testing.T) {
 // return the subnet associated with an existing device, even if that subnet is
 // not the most subnet that contains the given IP address
 func TestOverlappingSubnetWithDevice(t *testing.T) {
-	t.Parallel()
-
 	customerID := rand.Int31()
 	subnetID1 := rand.Int31()
 	subnetID2 := rand.Int31()
@@ -402,6 +390,299 @@ func TestOverlappingSubnetWithDevice(t *testing.T) {
 	}
 
 	require.Equal(t, expected, asset)
+}
+
+func TestFetchSubnet(t *testing.T) {
+	customerID1 := rand.Int31()
+	customerID2 := rand.Int31()
+
+	ipamData := domain.IPAMData{
+		Customers: []domain.Customer{
+			{
+				ID:            strconv.Itoa(int(customerID1)),
+				ResourceOwner: "alice@example.com",
+				BusinessUnit:  "Example Team",
+			},
+			{
+				ID:            strconv.Itoa(int(customerID2)),
+				ResourceOwner: "bob@example.com",
+				BusinessUnit:  "Team Example",
+			},
+		},
+		Subnets: []domain.Subnet{
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "1.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "2.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "3.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "4.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "5.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "6.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "7.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "8.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "9.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(rand.Int31())),
+				Network:    "10.0.0.0",
+				MaskBits:   24,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+		},
+	}
+
+	ctx := context.Background()
+	source, err := settings.NewEnvSource(os.Environ())
+	require.Nil(t, err)
+
+	postgresComponent := &sqldb.PostgresComponent{}
+	db := new(sqldb.PostgresDB)
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
+	defer db.Conn().Close()
+
+	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
+	err = storer.StorePhysicalAssets(ctx, ipamData)
+	require.Nil(t, err)
+
+	fetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
+
+	limit := 2
+	for offset := 0; offset < len(ipamData.Subnets); offset += limit {
+		asset, err := fetcher.FetchSubnets(ctx, limit, offset)
+		require.Nil(t, err)
+
+		expected := []domain.AssetSubnet{
+			{
+				ResourceOwner: "alice@example.com",
+				BusinessUnit:  "Example Team",
+				Network:       fmt.Sprintf("%d.0.0.0/24", offset+1),
+				Location:      "Home",
+			},
+			{
+				ResourceOwner: "bob@example.com",
+				BusinessUnit:  "Team Example",
+				Network:       fmt.Sprintf("%d.0.0.0/24", offset+2),
+				Location:      "Home",
+			},
+		}
+
+		require.Equal(t, expected, asset)
+	}
+}
+
+func TestFetchIPs(t *testing.T) {
+	customerID1 := rand.Int31()
+	customerID2 := rand.Int31()
+	subnetID1 := rand.Int31()
+	subnetID2 := rand.Int31()
+
+	ipamData := domain.IPAMData{
+		Customers: []domain.Customer{
+			{
+				ID:            strconv.Itoa(int(customerID1)),
+				ResourceOwner: "alice@example.com",
+				BusinessUnit:  "Example Team",
+			},
+			{
+				ID:            strconv.Itoa(int(customerID2)),
+				ResourceOwner: "bob@example.com",
+				BusinessUnit:  "Team Example",
+			},
+		},
+		Subnets: []domain.Subnet{
+			{
+				ID:         strconv.Itoa(int(subnetID1)),
+				Network:    "1.0.0.0",
+				MaskBits:   25,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID1)),
+			},
+			{
+				ID:         strconv.Itoa(int(subnetID2)),
+				Network:    "1.0.0.128",
+				MaskBits:   25,
+				Location:   "Home",
+				CustomerID: strconv.Itoa(int(customerID2)),
+			},
+		},
+		Devices: []domain.Device{
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.1",
+				SubnetID: strconv.Itoa(int(subnetID1)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.2",
+				SubnetID: strconv.Itoa(int(subnetID1)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.3",
+				SubnetID: strconv.Itoa(int(subnetID1)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.4",
+				SubnetID: strconv.Itoa(int(subnetID1)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.129",
+				SubnetID: strconv.Itoa(int(subnetID2)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.130",
+				SubnetID: strconv.Itoa(int(subnetID2)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.131",
+				SubnetID: strconv.Itoa(int(subnetID2)),
+			},
+			{
+				ID:       strconv.Itoa(int(rand.Int31())),
+				IP:       "1.0.0.132",
+				SubnetID: strconv.Itoa(int(subnetID2)),
+			},
+		},
+	}
+
+	ctx := context.Background()
+	source, err := settings.NewEnvSource(os.Environ())
+	require.Nil(t, err)
+
+	postgresComponent := &sqldb.PostgresComponent{}
+	db := new(sqldb.PostgresDB)
+	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
+	defer db.Conn().Close()
+
+	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
+	err = storer.StorePhysicalAssets(ctx, ipamData)
+	require.Nil(t, err)
+
+	fetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
+
+	limit := 2
+	ips := make([]domain.AssetIP, 0, len(ipamData.Devices))
+	for offset := 0; offset < len(ipamData.Devices); offset += limit {
+		result, err := fetcher.FetchIPs(ctx, limit, offset)
+		require.Nil(t, err)
+
+		ips = append(ips, result...)
+	}
+	expected := []domain.AssetIP{
+		{
+			IP:            "1.0.0.1",
+			Network:       "1.0.0.0/25",
+			ResourceOwner: "alice@example.com",
+			BusinessUnit:  "Example Team",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.2",
+			Network:       "1.0.0.0/25",
+			ResourceOwner: "alice@example.com",
+			BusinessUnit:  "Example Team",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.3",
+			Network:       "1.0.0.0/25",
+			ResourceOwner: "alice@example.com",
+			BusinessUnit:  "Example Team",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.4",
+			Network:       "1.0.0.0/25",
+			ResourceOwner: "alice@example.com",
+			BusinessUnit:  "Example Team",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.129",
+			Network:       "1.0.0.128/25",
+			ResourceOwner: "bob@example.com",
+			BusinessUnit:  "Team Example",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.130",
+			Network:       "1.0.0.128/25",
+			ResourceOwner: "bob@example.com",
+			BusinessUnit:  "Team Example",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.131",
+			Network:       "1.0.0.128/25",
+			ResourceOwner: "bob@example.com",
+			BusinessUnit:  "Team Example",
+			Location:      "Home",
+		},
+		{
+			IP:            "1.0.0.132",
+			Network:       "1.0.0.128/25",
+			ResourceOwner: "bob@example.com",
+			BusinessUnit:  "Team Example",
+			Location:      "Home",
+		},
+	}
+	require.Equal(t, expected, ips)
 }
 
 // returns a raw sql.DB object, rather than the storage.DB abstraction, so

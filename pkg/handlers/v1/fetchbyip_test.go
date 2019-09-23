@@ -78,7 +78,7 @@ func TestFetchHandlerInvalidInput(t *testing.T) {
 
 	response, err := handler.Handle(context.Background(), IPAddressQuery{IPAddress: "boom!"})
 	require.Equal(t, PhysicalAssetDetails{}, response)
-	require.Equal(t, domain.InvalidInput{IP: "boom!"}, err)
+	require.Equal(t, domain.InvalidInput{Input: "boom!"}, err)
 }
 
 func TestFetchHandlerAssetNotFound(t *testing.T) {

@@ -24,6 +24,7 @@ type config struct {
 	Producer       *producer.Config
 	Postgres       *sqldb.PostgresConfig
 	Device42       *ipamfetcher.Device42ClientConfig
+	PageSize       int
 }
 
 func (*config) Name() string {
@@ -42,6 +43,7 @@ func (c *component) Settings() *config {
 		Producer:   c.Producer.Settings(),
 		Postgres:   c.Postgres.Settings(),
 		Device42:   c.Device42.Settings(),
+		PageSize:   100,
 	}
 }
 
@@ -88,6 +90,11 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		LogFn:                domain.LoggerFromContext,
 		PhysicalAssetFetcher: assetFetcher,
 	}
+	fetchPageHandler := &v1.FetchPageHandler{
+		LogFn:           domain.LoggerFromContext,
+		Fetcher:         assetFetcher,
+		DefaultPageSize: conf.PageSize,
+	}
 	assetStorer := &assetstorer.PostgresPhysicalAssetStorer{DB: pgdb}
 	syncHandler := &v1.SyncIPAMDataHandler{
 		IPAMDataFetcher:     ipamDataFetcher,
@@ -96,9 +103,13 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	}
 
 	handlers := map[string]serverfull.Function{
-		"fetchbyip": serverfull.NewFunction(fetchHandler.Handle),
-		"sync":      serverfull.NewFunction(syncHandler.Handle),
-		"enqueue":   serverfull.NewFunction(enqueueHandler.Handle),
+		"fetchbyip":        serverfull.NewFunction(fetchHandler.Handle),
+		"sync":             serverfull.NewFunction(syncHandler.Handle),
+		"enqueue":          serverfull.NewFunction(enqueueHandler.Handle),
+		"fetchIPs":         serverfull.NewFunction(fetchPageHandler.FetchIPs),
+		"fetchNextIPs":     serverfull.NewFunction(fetchPageHandler.FetchNextIPs),
+		"fetchSubnets":     serverfull.NewFunction(fetchPageHandler.FetchSubnets),
+		"fetchNextSubnets": serverfull.NewFunction(fetchPageHandler.FetchNextSubnets),
 	}
 
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}

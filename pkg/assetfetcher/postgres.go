@@ -20,6 +20,20 @@ const fetchByIPQuery = `SELECT host(i.ip) as ip, c.resource_owner as resource_ow
 						ORDER BY i.device_id IS NOT NULL DESC, masklen(s.network) DESC
 						LIMIT 1;`
 
+const fetchSubnetsQuery = `SELECT network, location, resource_owner, business_unit
+						FROM subnets
+						LEFT JOIN customers ON
+							subnets.customer_id=customers.id
+						LIMIT $1 OFFSET $2;`
+
+const fetchIPsQuery = `SELECT ip, network, location, resource_owner, business_unit
+						FROM ips
+						LEFT JOIN subnets ON
+							ips.subnet_id=subnets.id
+						LEFT JOIN customers ON
+							subnets.customer_id=customers.id
+						LIMIT $1 OFFSET $2;`
+
 // PostgresPhysicalAssetFetcher physical assets from a PostgreSQL database by IP address.
 type PostgresPhysicalAssetFetcher struct {
 	DB domain.SQLDB
@@ -58,4 +72,86 @@ func (f *PostgresPhysicalAssetFetcher) FetchPhysicalAsset(ctx context.Context, i
 	}
 
 	return asset, nil
+}
+
+// FetchSubnets fetches a single page of subnets from the data store
+func (f *PostgresPhysicalAssetFetcher) FetchSubnets(ctx context.Context, limit, offset int) ([]domain.AssetSubnet, error) {
+	rows, err := f.DB.Conn().QueryContext(ctx, fetchSubnetsQuery, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	subnets := make([]domain.AssetSubnet, 0, limit)
+	for rows.Next() {
+		var network string
+		var location sql.NullString
+		var resourceOwner sql.NullString
+		var businessUnit sql.NullString
+		if err := rows.Scan(&network, &location, &resourceOwner, &businessUnit); err != nil {
+			// this would indicate an error in our schema or ordering of variables.
+			// either case would be a terminal error, so we close the rows at best effort and return.
+			_ = rows.Close()
+			return nil, err
+		}
+		subnet := domain.AssetSubnet{
+			Network: network,
+		}
+		if location.Valid {
+			subnet.Location = location.String
+		}
+		if resourceOwner.Valid {
+			subnet.ResourceOwner = resourceOwner.String
+		}
+		if businessUnit.Valid {
+			subnet.BusinessUnit = businessUnit.String
+		}
+		subnets = append(subnets, subnet)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	return subnets, nil
+}
+
+// FetchIPs fetches a single page of IP addresses from the data store
+func (f *PostgresPhysicalAssetFetcher) FetchIPs(ctx context.Context, limit, offset int) ([]domain.AssetIP, error) {
+	rows, err := f.DB.Conn().QueryContext(ctx, fetchIPsQuery, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	ips := make([]domain.AssetIP, 0, limit)
+	for rows.Next() {
+		var ipAddr string
+		var network string
+		var location sql.NullString
+		var resourceOwner sql.NullString
+		var businessUnit sql.NullString
+		if err := rows.Scan(&ipAddr, &network, &location, &resourceOwner, &businessUnit); err != nil {
+			// this would indicate an error in our schema or ordering of variables.
+			// either case would be a terminal error, so we close the rows at best effort and return.
+			_ = rows.Close()
+			return nil, err
+		}
+		ip := domain.AssetIP{
+			IP:      ipAddr,
+			Network: network,
+		}
+		if location.Valid {
+			ip.Location = location.String
+		}
+		if resourceOwner.Valid {
+			ip.ResourceOwner = resourceOwner.String
+		}
+		if businessUnit.Valid {
+			ip.BusinessUnit = businessUnit.String
+		}
+		ips = append(ips, ip)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	return ips, nil
 }

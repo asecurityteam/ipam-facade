@@ -44,7 +44,7 @@ func (h *FetchByIPAddressHandler) Handle(ctx context.Context, query IPAddressQue
 	logger := h.LogFn(ctx)
 
 	if ip := net.ParseIP(query.IPAddress); ip == nil {
-		err := domain.InvalidInput{IP: query.IPAddress}
+		err := domain.InvalidInput{Input: query.IPAddress}
 		logger.Info(logs.InvalidInput{Reason: err.Error()})
 		return PhysicalAssetDetails{}, err
 	}
