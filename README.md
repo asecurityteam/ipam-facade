@@ -1,7 +1,7 @@
 <a id="markdown-ipam-facade" name="ipam-facade"></a>
 # ipam-facade - A facade for the IPAM functionality in the Device42 CMDB
 [![GoDoc](https://godoc.org/github.com/asecurityteam/ipam-facade?status.svg)](https://godoc.org/github.com/asecurityteam/ipam-facade)
-[![Build Status](https://travis-ci.org/asecurityteam/ipam-facade.png?branch=master)](https://travis-ci.org/asecurityteam/ipam-facade)
+[![Build Status](https://travis-ci.com/asecurityteam/ipam-facade.png?branch=master)](https://travis-ci.com/asecurityteam/ipam-facade)
 [![codecov.io](https://codecov.io/github/asecurityteam/ipam-facade/coverage.svg?branch=master)](https://codecov.io/github/asecurityteam/ipam-facade?branch=master)
 
 <https://github.com/asecurityteam/ipam-facade>
