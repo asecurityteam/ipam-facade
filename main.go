@@ -102,6 +102,10 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		PhysicalAssetStorer: assetStorer,
 	}
 
+	dependencyCheckHandler := &v1.DependencyCheckHandler{
+		DependencyCheckList: []domain.DependencyCheck{pgdb},
+	}
+
 	handlers := map[string]serverfull.Function{
 		"fetchbyip":        serverfull.NewFunction(fetchHandler.Handle),
 		"sync":             serverfull.NewFunction(syncHandler.Handle),
@@ -110,6 +114,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		"fetchNextIPs":     serverfull.NewFunction(fetchPageHandler.FetchNextIPs),
 		"fetchSubnets":     serverfull.NewFunction(fetchPageHandler.FetchSubnets),
 		"fetchNextSubnets": serverfull.NewFunction(fetchPageHandler.FetchNextSubnets),
+		"dependencycheck":  serverfull.NewFunction(dependencyCheckHandler.Handle),
 	}
 
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
