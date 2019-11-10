@@ -103,7 +103,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	}
 
 	dependencyCheckHandler := &v1.DependencyCheckHandler{
-		DependencyCheckList: []domain.DependencyCheck{pgdb},
+		DependencyCheckList: []domain.DependencyCheck{pgdb, dc},
 	}
 
 	handlers := map[string]serverfull.Function{

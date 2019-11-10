@@ -2,6 +2,7 @@ package ipamfetcher
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -65,4 +66,22 @@ type Device42Client struct {
 	Client   *http.Client
 	Endpoint *url.URL
 	Limit    int
+}
+
+// CheckDependencies makes a call to Endpoint, no path is involved. This is the only
+// Because Device42Client is the only shared dependency shared amongst Device42DeviceFetcher,
+// Device42SubnetFetcher, and Device42CustomerFetcher, we don't need to test each of
+// those components for dependencies
+func (d *Device42Client) CheckDependencies(ctx context.Context) error {
+	u, _ := url.Parse(d.Endpoint.String())
+	req, _ := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
+	res, err := d.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return fmt.Errorf("Device42Client unexpectedly returned non-200 response code: %d attempting to GET: %s", res.StatusCode, u.String())
+	}
+	return nil
 }
