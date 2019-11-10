@@ -47,6 +47,47 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 paths:
+  /:
+    get:
+      description: Root endpoint to check for basic communication, a dependency check.
+      responses:
+        200:
+          description: "Success"
+        401:
+          description: "Unauthorized"
+        404:
+          description: "Not Found"
+      x-transportd:
+        backend: ipam
+        enabled:
+          - "accesslog"
+          - "metrics"
+          - "requestvalidation"
+          - "responsevalidation"
+          - "timeout"
+          - "retry"
+          - "basicauth"
+        timeout:
+          after: "${IPAM_TIMEOUT}"
+        retry:
+          backoff: "50ms"
+          limit: 3
+          codes:
+            - 500
+            - 501
+            - 502
+            - 503
+            - 504
+            - 505
+            - 506
+            - 507
+            - 508
+            - 509
+            - 510
+            - 511
+        basicauth:
+          username: "${IPAM_USERNAME}"
+          password: "${IPAM_PASSWORD}"
   /api/1.0/ips:
     get:
       description: IPAM API for retrieving paged IPs.
