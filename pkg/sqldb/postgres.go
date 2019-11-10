@@ -171,3 +171,8 @@ func (db *PostgresDB) create(name string) error {
 
 	return nil
 }
+
+// CheckDependencies checks to see if the db connection is available
+func (db *PostgresDB) CheckDependencies(ctx context.Context) error {
+	return db.conn.Ping()
+}
