@@ -9,6 +9,7 @@ import (
 	producer "github.com/asecurityteam/component-producer"
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
+	"github.com/asecurityteam/ipam-facade/pkg/dependencycheck"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
@@ -103,7 +104,9 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 	}
 
 	dependencyCheckHandler := &v1.DependencyCheckHandler{
-		DependencyCheckList: []domain.DependencyCheck{pgdb, dc},
+		DependencyChecker: &dependencycheck.MultiDependencyCheck{
+			DependencyCheckList: []domain.DependencyCheck{pgdb, dc},
+		},
 	}
 
 	handlers := map[string]serverfull.Function{
