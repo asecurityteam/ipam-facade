@@ -47,9 +47,9 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 paths:
-  /:
+  /api/1.0/vrfgroup:
     get:
-      description: Root endpoint to check for basic communication, a dependency check.
+      description: An endpoint that seems lightweight, used for this service to check for basic communication.
       responses:
         200:
           description: "Success"
