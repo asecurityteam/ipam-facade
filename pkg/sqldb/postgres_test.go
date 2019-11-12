@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -189,4 +190,15 @@ func TestRunScriptTxCommit(t *testing.T) {
 	}
 	require.NoError(t, thedb.RunScript(context.Background(), "script1"))
 	require.Nil(t, mock.ExpectationsWereMet(), "there were unfulfilled expectations: %s", mock.ExpectationsWereMet())
+}
+
+func TestPostgresDependencyCheck(t *testing.T) {
+	mockdb, _, err := sqlmock.New()
+	require.NoError(t, err)
+	postgres := PostgresDB{
+		conn:    mockdb,
+		scripts: scriptFound,
+	}
+	err = postgres.CheckDependencies(context.Background())
+	assert.Nil(t, err)
 }

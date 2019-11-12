@@ -9,6 +9,7 @@ import (
 	producer "github.com/asecurityteam/component-producer"
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
+	"github.com/asecurityteam/ipam-facade/pkg/dependencycheck"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	v1 "github.com/asecurityteam/ipam-facade/pkg/handlers/v1"
 	"github.com/asecurityteam/ipam-facade/pkg/ipamfetcher"
@@ -102,6 +103,12 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		PhysicalAssetStorer: assetStorer,
 	}
 
+	dependencyCheckHandler := &v1.DependencyCheckHandler{
+		DependencyChecker: &dependencycheck.MultiDependencyCheck{
+			DependencyCheckList: []domain.DependencyCheck{pgdb, dc},
+		},
+	}
+
 	handlers := map[string]serverfull.Function{
 		"fetchbyip":        serverfull.NewFunction(fetchHandler.Handle),
 		"sync":             serverfull.NewFunction(syncHandler.Handle),
@@ -110,6 +117,7 @@ func (c *component) New(ctx context.Context, conf *config) (func(context.Context
 		"fetchNextIPs":     serverfull.NewFunction(fetchPageHandler.FetchNextIPs),
 		"fetchSubnets":     serverfull.NewFunction(fetchPageHandler.FetchSubnets),
 		"fetchNextSubnets": serverfull.NewFunction(fetchPageHandler.FetchNextSubnets),
+		"dependencycheck":  serverfull.NewFunction(dependencyCheckHandler.Handle),
 	}
 
 	fetcher := &serverfull.StaticFetcher{Functions: handlers}
