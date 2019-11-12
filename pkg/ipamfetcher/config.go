@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 
 	httpclient "github.com/asecurityteam/component-httpclient"
 )
@@ -74,6 +75,7 @@ type Device42Client struct {
 // those components for dependencies
 func (d *Device42Client) CheckDependencies(ctx context.Context) error {
 	u, _ := url.Parse(d.Endpoint.String())
+	u.Path = path.Join(u.Path, "api", "1.0", "vrfgroup")
 	req, _ := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
 	res, err := d.Client.Do(req)
 	if err != nil {
