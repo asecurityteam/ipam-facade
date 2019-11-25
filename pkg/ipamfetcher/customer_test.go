@@ -55,6 +55,127 @@ func TestFetchCustomers(t *testing.T) {
 	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "foo@atlassian.com", BusinessUnit: "Security"}, domain.Customer{ID: "2", ResourceOwner: "bar@atlassian.com", BusinessUnit: "Bitbucket"}}, customers)
 }
 
+func TestFetchCustomersFallbackToName(t *testing.T) {
+	// test that we fall back to the top level "name" when "Custom Fields" value for key=="Description" is empty
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "foo@atlassian.com", "name": "BobTheBusinessUnit", "Custom Fields": [{"key": "Description", "value": ""}]}, {"id": 2, "contact_info": "bar@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Bitbucket"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "foo@atlassian.com", BusinessUnit: "BobTheBusinessUnit"}, domain.Customer{ID: "2", ResourceOwner: "bar@atlassian.com", BusinessUnit: "Bitbucket"}}, customers)
+}
+
+func TestFetchCustomersNoContacts(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "contactinfo@atlassian.com", BusinessUnit: "Security"}}, customers)
+}
+
+func TestFetchCustomersUseTeamLead(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Team Lead", "email": "teamlead@atlassian.com"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "teamlead@atlassian.com", BusinessUnit: "Security"}}, customers)
+}
+
+func TestFetchCustomersUseAdministrative(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Administrative", "email": "administrative@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "administrative@atlassian.com", BusinessUnit: "Security"}}, customers)
+}
+
+func TestFetchCustomersUseSRE(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "sre@atlassian.com", BusinessUnit: "Security"}}, customers)
+}
+
+func TestFetchCustomersUseTechnical(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockRT := NewMockRoundTripper(ctrl)
+	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
+		&http.Response{
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}]}]}`))),
+			StatusCode: http.StatusOK,
+		},
+		nil,
+	)
+	endpoint, _ := url.Parse("http://locaEndpoint")
+
+	c := &Device42CustomerFetcher{Endpoint: endpoint, Client: &http.Client{Transport: mockRT}}
+
+	customers, err := c.FetchCustomers(context.Background())
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []domain.Customer{domain.Customer{ID: "1", ResourceOwner: "technical@atlassian.com", BusinessUnit: "Security"}}, customers)
+}
+
 func TestFetchCustomersRequestError(t *testing.T) {
 	tc := []struct {
 		name        string
