@@ -41,7 +41,7 @@ func TestFetchCustomers(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "foo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}]}, {"id": 2, "contact_info": "bar@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Bitbucket"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "foo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}]}, {"id": 2, "contact_info": "bar@atlassian.com", "custom_fields": [{"key": "Description", "value": "Bitbucket"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -56,13 +56,13 @@ func TestFetchCustomers(t *testing.T) {
 }
 
 func TestFetchCustomersFallbackToName(t *testing.T) {
-	// test that we fall back to the top level "name" when "Custom Fields" value for key=="Description" is empty
+	// test that we fall back to the top level "name" when "custom_fields" value for key=="Description" is empty
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "foo@atlassian.com", "name": "BobTheBusinessUnit", "Custom Fields": [{"key": "Description", "value": ""}]}, {"id": 2, "contact_info": "bar@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Bitbucket"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "foo@atlassian.com", "name": "BobTheBusinessUnit", "custom_fields": [{"key": "Description", "value": ""}]}, {"id": 2, "contact_info": "bar@atlassian.com", "custom_fields": [{"key": "Description", "value": "Bitbucket"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -82,7 +82,7 @@ func TestFetchCustomersNoContacts(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -102,7 +102,7 @@ func TestFetchCustomersUseTeamLead(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Team Lead", "email": "teamlead@atlassian.com"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Team Lead", "email": "teamlead@atlassian.com"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -122,7 +122,7 @@ func TestFetchCustomersUseAdministrative(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Administrative", "email": "administrative@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Administrative", "email": "administrative@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -142,7 +142,7 @@ func TestFetchCustomersUseSRE(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}, {"type": "SRE", "email": "sre@atlassian.com"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,
@@ -162,7 +162,7 @@ func TestFetchCustomersUseTechnical(t *testing.T) {
 	mockRT := NewMockRoundTripper(ctrl)
 	mockRT.EXPECT().RoundTrip(gomock.Any()).Return(
 		&http.Response{
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "Custom Fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}]}]}`))),
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"Customers": [{"id": 1, "contact_info": "contactinfo@atlassian.com", "custom_fields": [{"key": "Description", "value": "Security"}], "Contacts": [{"type": "Technical", "email": "technical@atlassian.com"}]}]}`))),
 			StatusCode: http.StatusOK,
 		},
 		nil,

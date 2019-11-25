@@ -330,6 +330,11 @@ components:
     Customer:
       type: object
       properties:
+        Contacts:
+          type: array
+          description: list of contacts
+          items:
+            $ref: '#/components/schemas/Contact'
         custom_fields:
           type: array
           description: list of custom fields
@@ -341,6 +346,15 @@ components:
         id:
           type: integer
           description: customer identifier
+    Contact:
+      type: object
+      properties:
+        type:
+          type: string
+          description: the type of contact, like "Technical" or "SRE"
+        email:
+          type: string
+          description: the email address of the contact
     CustomField:
       type: object
       properties:

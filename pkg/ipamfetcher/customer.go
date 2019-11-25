@@ -19,7 +19,7 @@ type customersResponse struct {
 
 type customer struct {
 	Contacts     []Contact    `json:"Contacts"`
-	CustomFields customFields `json:"Custom Fields"`
+	CustomFields customFields `json:"custom_fields"`
 	ContactInfo  string       `json:"contact_info"`
 	ID           int          `json:"id"`
 	Name         string       `json:"name"`
