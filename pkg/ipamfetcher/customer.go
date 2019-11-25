@@ -98,8 +98,6 @@ func getResourceOwner(customer customer) string {
 	   5. Fall back to The "contact_info" field directly on the customer record
 	*/
 
-	fmt.Printf("MIKE: %v\n", customer)
-
 	owner := customer.ContactInfo
 	fromPriority := 5
 	for _, contact := range customer.Contacts {
