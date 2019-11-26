@@ -21,12 +21,14 @@ require (
 	github.com/getkin/kin-openapi v0.2.0 // indirect
 	github.com/go-chi/chi v3.3.4+incompatible // indirect
 	github.com/gobuffalo/packd v0.2.0 // indirect
-	github.com/gobuffalo/packr v0.0.0-20190614022956-a7085697a89c // indirect
 	github.com/gobuffalo/packr/v2 v2.2.0
 	github.com/golang/mock v1.3.1
 	github.com/google/uuid v1.1.1
+	github.com/justinas/alice v1.2.0 // indirect
 	github.com/karrick/godirwalk v1.10.12 // indirect
 	github.com/lib/pq v1.2.0
 	github.com/pkg/errors v0.8.1
+	github.com/rs/cors v1.7.0 // indirect
+	github.com/rs/xlog v0.0.0-20171227185259-131980fab91b // indirect
 	github.com/stretchr/testify v1.3.0
 )

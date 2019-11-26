@@ -39,6 +39,22 @@
 
 <Details of how to actually work with the project>
 
+This service collects a single email address from each "Customer" object of the `/api/1.0/customers` IPAM endpoint
+to use as the designated resource owner when the customer is associated with the ip addresses and subnets.
+The default behavior in this service is to just use the `contact_info` field from the "customer" object in
+the response from the `/api/1.0/customers` endpoint.
+
+Your use of IPAM may be such that you've assigned Contacts for each Customer, each with a "type".  If you
+want to prioritize the use of one of the Contact email addresses over the `contact_info` value, you should
+set the `CONTACT_TYPESEARCHORDER` environment variable.  The value of the variable is a comma-delimited
+priority list of "type"s you've defined in your use of IPAM.  For example, if you've designated a "Technical"
+and "SRE" contact, and you want to prioritize the use of "SRE" over "Technical", always with a fallback to
+`contact_info`, set the environment variable as such:
+
+```
+CONTACT_TYPESEARCHORDER="SRE,Technical"
+```
+
 <a id="markdown-status" name="status"></a>
 ## Status
 
