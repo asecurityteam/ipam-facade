@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
@@ -97,6 +98,10 @@ func TestFetchCustomersNoContacts(t *testing.T) {
 }
 
 func TestFetchCustomersUseTeamLead(t *testing.T) {
+
+	os.Setenv("CONTACT_TYPESEARCHORDER", "Team Lead,Administrative,SRE,Technical")
+	defer os.Clearenv()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRT := NewMockRoundTripper(ctrl)
@@ -117,6 +122,10 @@ func TestFetchCustomersUseTeamLead(t *testing.T) {
 }
 
 func TestFetchCustomersUseAdministrative(t *testing.T) {
+
+	os.Setenv("CONTACT_TYPESEARCHORDER", "Team Lead,Administrative,SRE,Technical")
+	defer os.Clearenv()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRT := NewMockRoundTripper(ctrl)
@@ -137,6 +146,10 @@ func TestFetchCustomersUseAdministrative(t *testing.T) {
 }
 
 func TestFetchCustomersUseSRE(t *testing.T) {
+
+	os.Setenv("CONTACT_TYPESEARCHORDER", "Team Lead,Administrative,SRE,Technical")
+	defer os.Clearenv()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRT := NewMockRoundTripper(ctrl)
@@ -157,6 +170,10 @@ func TestFetchCustomersUseSRE(t *testing.T) {
 }
 
 func TestFetchCustomersUseTechnical(t *testing.T) {
+
+	os.Setenv("CONTACT_TYPESEARCHORDER", "Team Lead,Administrative,SRE,Technical")
+	defer os.Clearenv()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRT := NewMockRoundTripper(ctrl)

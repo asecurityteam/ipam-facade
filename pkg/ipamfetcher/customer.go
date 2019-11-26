@@ -7,11 +7,41 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
+	"github.com/asecurityteam/settings"
 )
+
+// config contains all configuration values for creating a system logger.
+type config struct {
+	TypeSearchOrder string `description:"Comma-delimited priority list of 'type' value in the IPAM Contacts objects in which to search for non-empty 'email' to use as the resource owner.  If no values are found, the logic falls back to using Customer.contact_info"`
+}
+
+// Name of the configuration as it might appear in config files.
+func (*config) Name() string {
+	return "Contact"
+}
+
+// component enables creating configured logic.
+type component struct{}
+
+// settings generates a Config with default values applied.
+func (*component) Settings() *config {
+	return &config{}
+}
+
+// New creates a function that loads the config from the designated source
+func (*component) New(_ context.Context, c *config) (*searchOrder, error) {
+	return &searchOrder{keys: strings.Split(c.TypeSearchOrder, ",")}, nil
+}
+
+type searchOrder struct {
+	keys []string
+}
 
 type customersResponse struct {
 	Customers []customer `json:"Customers"`
@@ -27,7 +57,7 @@ type customer struct {
 
 // Contact represents each contact object under the Customer object "Contacts" array.
 type Contact struct {
-	Type  string `json:"type"` // As of checking IPAM on Nov 25, 2019, can be any one of "Team Lead", "Technical", "Administrative", "Billing", "SRE"
+	Type  string `json:"type"`
 	Email string `json:"email"`
 }
 
@@ -90,32 +120,45 @@ func getResourceOwner(customer customer) string {
 
 	/*
 	   Find the best resource owner by searching through the contacts
-	   for non-empty Value for the following Key, in this priority order:
-	   1. Team Lead Contact Email
-	   2. Administrative Contact Email
-	   3. SRE Contact Email
-	   4. Technical Contact Email
-	   5. Fall back to The "contact_info" field directly on the customer record
+	   for non-empty Value for the following Key, in the priority order
+	   specified by the CONTACT_TYPESEARCHORDER environment variable, with a
+	   fall back to The "contact_info" field.
 	*/
 
+	searchOrder := new(searchOrder)
+	source, err := settings.NewEnvSource(os.Environ())
+	if err != nil {
+		panic(err.Error())
+	}
+	err = settings.NewComponent(context.Background(), source, &component{}, searchOrder)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	highestPriorityFound := len(searchOrder.keys)
+
 	owner := customer.ContactInfo
-	fromPriority := 5
+
 	for _, contact := range customer.Contacts {
-		if contact.Type == "Team Lead" && contact.Email != "" && fromPriority > 1 {
+		keyIndex := keyIndex(searchOrder.keys, contact.Type)
+		if keyIndex > -1 && keyIndex < highestPriorityFound && contact.Email != "" {
+			// this is one of the contacts we're looking for, and it's higher priority than any others we've found so far
 			owner = contact.Email
-			fromPriority = 1
-		} else if contact.Type == "Administrative" && contact.Email != "" && fromPriority > 2 {
-			owner = contact.Email
-			fromPriority = 2
-		} else if contact.Type == "SRE" && contact.Email != "" && fromPriority > 3 {
-			owner = contact.Email
-			fromPriority = 3
-		} else if contact.Type == "Technical" && contact.Email != "" && fromPriority > 4 {
-			owner = contact.Email
-			fromPriority = 4
+			highestPriorityFound = keyIndex
 		}
 	}
 
 	return owner
 
+}
+
+func keyIndex(haystack []string, needle string) int {
+	keyIndex := -1
+	for _, straw := range haystack {
+		keyIndex++
+		if straw == needle {
+			return keyIndex
+		}
+	}
+	return -1
 }
