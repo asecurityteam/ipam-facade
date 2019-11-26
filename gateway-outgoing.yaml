@@ -346,6 +346,9 @@ components:
         id:
           type: integer
           description: customer identifier
+        name:
+          type: string
+          description: name of the customer
     Contact:
       type: object
       properties:
