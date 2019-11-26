@@ -48,7 +48,7 @@ Your use of IPAM may be such that you've assigned Contacts for each Customer, ea
 want to prioritize the use of one of the Contact email addresses over the `contact_info` value, you should
 set the `CONTACT_TYPESEARCHORDER` environment variable.  The value of the variable is a comma-delimited
 priority list of "type"s you've defined in your use of IPAM.  For example, if you've designated a "Technical"
-and "SRE" contact, and you want to prioritize the use of "SRE" over "Technical",  always with a fallback to
+and "SRE" contact, and you want to prioritize the use of "SRE" over "Technical", always with a fallback to
 `contact_info`, set the environment variable as such:
 
 ```

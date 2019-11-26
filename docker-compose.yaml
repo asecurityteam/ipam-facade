@@ -43,6 +43,7 @@ services:
       IPAMFACADE_POSTGRES_DATABASENAME: "ipamfacade"
       IPAMFACADE_POSTGRES_HOSTNAME: "postgres"
       IPAMFACADE_POSTGRES_PORT: "5432"
+      CONTACT_TYPESEARCHORDER: "" # see README.md for documentation
     depends_on:
       - postgres
   gateway-incoming:
