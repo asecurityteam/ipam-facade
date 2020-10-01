@@ -430,7 +430,7 @@ components:
       properties:
         nextPageToken:
           type: string
-          description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
+          description: token to be issued in the subsequent request to fetch the next page. This token should always be the one issued from the previous response. An empty value indicates there is no next page.
         results:
           type: array
           items:
@@ -451,7 +451,7 @@ components:
       properties:
         nextPageToken:
           type: string
-          description: token to be issued in the subsequent request to fetch additional pages. This token should always be the one issued from the previous response
+          description: token to be issued in the subsequent request to fetch the next page. This token should always be the one issued from the previous response. An empty value indicates there is no next page.
         results:
           type: array
           items:

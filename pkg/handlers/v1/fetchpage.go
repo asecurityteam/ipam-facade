@@ -64,7 +64,10 @@ func (f *FetchPageHandler) FetchSubnets(ctx context.Context, input PaginationReq
 	for _, subnet := range subnets {
 		result = append(result, Subnet(subnet))
 	}
-	npt := getNextPageToken(input)
+	npt := ""                        // empty nextPageToken in the response is indicator to the caller that this returned page is the last
+	if len(subnets) == input.Limit { // there is probably a next page
+		npt = getNextPageToken(input)
+	}
 	return PaginationResponse{
 		NextPageToken: npt,
 		Result:        result,
@@ -95,7 +98,10 @@ func (f *FetchPageHandler) FetchIPs(ctx context.Context, input PaginationRequest
 	for _, ip := range ips {
 		result = append(result, IP(ip))
 	}
-	npt := getNextPageToken(input)
+	npt := ""                    // empty nextPageToken in the response is indicator to the caller that this returned page is the last
+	if len(ips) == input.Limit { // there is probably a next page
+		npt = getNextPageToken(input)
+	}
 	return PaginationResponse{
 		NextPageToken: npt,
 		Result:        result,
