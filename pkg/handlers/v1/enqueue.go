@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 
-	producer "github.com/asecurityteam/component-producer"
+	producer "github.com/asecurityteam/component-producer/v2"
 	"github.com/asecurityteam/ipam-facade/pkg/domain"
 	"github.com/asecurityteam/ipam-facade/pkg/logs"
 )

@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/asecurityteam/component-httpclient v0.2.0
-	github.com/asecurityteam/component-producer/v2 v2.0.1 // indirect
+	github.com/asecurityteam/component-producer/v2 v2.0.1
 	github.com/asecurityteam/runhttp v0.4.0
 	github.com/asecurityteam/serverfull v0.4.0
 	github.com/asecurityteam/settings v0.4.0

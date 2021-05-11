@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	producer "github.com/asecurityteam/component-producer"
+	producer "github.com/asecurityteam/component-producer/v2"
 	"github.com/asecurityteam/ipam-facade/pkg/assetfetcher"
 	"github.com/asecurityteam/ipam-facade/pkg/assetstorer"
 	"github.com/asecurityteam/ipam-facade/pkg/dependencycheck"
