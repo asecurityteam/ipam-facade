@@ -51,7 +51,12 @@ func TestNoDBRows(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
+
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 
 	// code should tolerate no data in the tables
 	fetcher := &assetfetcher.PostgresPhysicalAssetFetcher{DB: db}
@@ -91,7 +96,11 @@ func TestSubnetOnly(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(ctx, ipamData)
@@ -161,7 +170,11 @@ func TestDeviceAndSubnet(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(ctx, ipamData)
@@ -232,7 +245,11 @@ func TestDeviceAndSubnetNoDeviceID(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(ctx, ipamData)
@@ -296,7 +313,11 @@ func TestOverlappingSubnet(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(context.Background(), ipamData)
@@ -369,8 +390,11 @@ func TestOverlappingSubnetWithDevice(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
-
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(context.Background(), ipamData)
 	require.Nil(t, err)
@@ -491,8 +515,11 @@ func TestFetchSubnet(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
-
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(ctx, ipamData)
 	require.Nil(t, err)
@@ -605,8 +632,11 @@ func TestFetchIPs(t *testing.T) {
 	postgresComponent := &sqldb.PostgresComponent{}
 	db := new(sqldb.PostgresDB)
 	require.Nil(t, settings.NewComponent(ctx, source, postgresComponent, db))
-	defer db.Conn().Close()
-
+	defer func() {
+		if dbErr := db.Conn().Close(); dbErr != nil {
+			fmt.Println("Error when closing:", dbErr)
+		}
+	}()
 	storer := &assetstorer.PostgresPhysicalAssetStorer{DB: db}
 	err = storer.StorePhysicalAssets(ctx, ipamData)
 	require.Nil(t, err)
