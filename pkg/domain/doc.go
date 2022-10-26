@@ -12,5 +12,4 @@
 // define a corresponding Error() method. Because these errors provide executable
 // code they must also have corresponding tests. Only domain error types are allowed
 // to deviate from the "no executable code" rule.
-//
 package domain

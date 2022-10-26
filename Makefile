@@ -3,24 +3,23 @@ DIR := $(shell pwd -L)
 
 dep:
 	docker run -ti \
-        --mount src="$(DIR)",target="$(DIR)",type="bind" \
+        -v "$(DIR):$(DIR)" \
         -w "$(DIR)" \
         asecurityteam/sdcli:v1 go dep
 
 lint:
 	docker run -ti \
-        --mount src="$(DIR)",target="$(DIR)",type="bind" \
+        -v "$(DIR):$(DIR)" \
         -w "$(DIR)" \
         asecurityteam/sdcli:v1 go lint
 
 test:
 	docker run -ti \
-        --mount src="$(DIR)",target="$(DIR)",type="bind" \
+        -v "$(DIR):$(DIR)" \
         -w "$(DIR)" \
         asecurityteam/sdcli:v1 go test
 
 integration:
-	DIR=$(DIR) \
 	DIR=$(DIR) \
 	docker-compose \
 		-f docker-compose.it.yaml \
@@ -31,7 +30,7 @@ integration:
 
 coverage:
 	docker run -ti \
-        --mount src="$(DIR)",target="$(DIR)",type="bind" \
+        -v "$(DIR):$(DIR)" \
         -w "$(DIR)" \
         asecurityteam/sdcli:v1 go coverage
 
