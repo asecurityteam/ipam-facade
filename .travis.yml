@@ -1,9 +1,13 @@
 language: go
-sudo: false
 go:
   - 1.12.x
 services:
   - docker
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -v -L "https://github.com/docker/compose/releases/download/v2.11.2/docker-compose-linux-x86_64" -o docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 install:
   - chmod 777 -R "$(pwd)"
 script:
