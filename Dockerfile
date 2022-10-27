@@ -3,7 +3,7 @@ RUN mkdir -p /go/src/github.com/asecurityteam/ipam-facade
 WORKDIR $GOPATH/src/github.com/asecurityteam/ipam-facade
 COPY --chown=sdcli:sdcli . .
 RUN sdcli go dep
-RUN go get -u github.com/gobuffalo/packr/v2/packr2
+RUN go install github.com/gobuffalo/packr/v2/packr2@v2.8.3
 RUN packr2
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o /opt/app main.go
 # ensure we do not leak uid/guid that is only valid in this container to other steps
